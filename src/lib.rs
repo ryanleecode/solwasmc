@@ -2,6 +2,7 @@ use wasm_bindgen::prelude::*;
 use logos::Logos;
 
 mod token;
+mod pragma_directive;
 use token::Token;
 
 pub fn compile(assem_code: &str) -> &str {
