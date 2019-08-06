@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use logos::Logos;
 
-pub mod token;
+mod token;
 use token::Token;
 
 pub fn compile(assem_code: &str) -> &str {
