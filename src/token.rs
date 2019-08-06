@@ -409,7 +409,7 @@ pub enum Token {
 
 
     /** Other **/
-    #[regex = "0x[0-9]+"]
+    #[regex = "0x[0-9a-zA-Z]+"]
     HexNumber,
 
     #[regex = "[a-zA-Z0-9_]+"]
