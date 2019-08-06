@@ -22,10 +22,9 @@ pub fn compile(assem_code: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use itertools::Itertools;
     use crate::compile;
 
-    use pretty_assertions::{assert_eq, assert_ne};
+    use pretty_assertions::{assert_eq};
 
     #[test]
     fn generates_bytecode_for_testfile_1() {
