@@ -17,10 +17,9 @@ pub enum Atom {
     Identifier(String)
 }
 
-fn parse_pragma_token(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
-    map(context("keyword", |s: &str|tag!(s, "pragma")), |pragma: &str| {
-        Atom::Keyword(pragma.to_string())
-    })(i)
+fn parse_pragma_token(i: &[u8]) -> IResult<&[u8], Atom> {
+    map(|j| tag!(j, "pragma"),
+        |s| Atom::Keyword(from_utf8(s).unwrap().to_string()))(i)
 }
 
 fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], Atom> {
@@ -39,8 +38,8 @@ mod tests {
     fn parses_pragma_token() {
         let input = "pragma solidity ^0.5.6;";
         assert_eq!(
-            parse_pragma_token(input).ok(),
-            Some((" solidity ^0.5.6;", Atom::Keyword("pragma".to_string()))))
+            parse_pragma_token(input.as_bytes()).ok(),
+            Some((" solidity ^0.5.6;".as_bytes(), Atom::Keyword("pragma".to_string()))))
     }
 
     #[test]
