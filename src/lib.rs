@@ -1,8 +1,20 @@
 use wasm_bindgen::prelude::*;
+use logos::Logos;
 
-#[wasm_bindgen]
+pub mod token;
+use token::Token;
 
 pub fn compile(assem_code: &str) -> &str {
+    let mut lexer = Token::lexer(assem_code);
+
+    while lexer.token != Token::End {
+        if lexer.token == Token::Error {
+            println!("ERROR: {}", lexer.slice());
+            break;
+        }
+        println!("{}", lexer.slice());
+        lexer.advance();
+    }
     return "";
 }
 
