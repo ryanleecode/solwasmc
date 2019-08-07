@@ -6,14 +6,14 @@ print("""use nom::{{
     combinator::{{map}}
 }};
 """)
-with open('delimeters.txt') as f:
+with open('delimiter.txt') as f:
     lines = [line for line in f]
     for line in lines:
         name, token = line.rstrip().split(" ")
         print(f"const {name.upper()}: &str = r#\"{token}\"#;")
     print("")
     print("""#[derive(Debug, PartialEq, Clone)]
-pub enum Delimeter {""")
+pub enum Delimiter {""")
     for line in lines:
         name, _ = line.rstrip().split(" ")
         print(f"\t{name.upper()},")
@@ -21,9 +21,9 @@ pub enum Delimeter {""")
     print("")
     for line in lines:
         name, token = line.rstrip().split(" ")
-        print(f"""pub fn parse_{name}(i: &[u8]) -> IResult<&[u8], Delimeter> {{
+        print(f"""pub fn parse_{name}(i: &[u8]) -> IResult<&[u8], Delimiter> {{
     named!(semi, tag!(r#"{token}"#));
-    map(semi, |_| Delimeter::{name.upper()})(i)
+    map(semi, |_| Delimiter::{name.upper()})(i)
 }}""")
         print("")
     print("#[cfg(test)]")
@@ -37,6 +37,6 @@ pub enum Delimeter {""")
 \t    let (remaining, delim) = parse_{name}(input.as_bytes()).ok().unwrap();
 \t    assert_eq!(
 \t        (from_utf8(remaining).unwrap(), delim),
-\t        ("a", Delimeter::{name.upper()}))
+\t        ("a", Delimiter::{name.upper()}))
 \t}}""")
 print("}")
