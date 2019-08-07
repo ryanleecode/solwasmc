@@ -1,10 +1,9 @@
 use crate::atom::parse_identifier;
-use crate::keyword::parse_interface_keyword;
+use crate::keyword::parse_interface;
 use nom::character::complete::{char, multispace0, multispace1};
 use nom::sequence::preceded;
 use nom::IResult;
 use nom::{combinator::map, sequence::delimited};
-use std::str::from_utf8;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ContractDefinition {
@@ -17,7 +16,7 @@ fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractDefinition> {
   map(
     delimited(
       preceded(
-        parse_interface_keyword,
+        parse_interface,
         preceded(multispace1, parse_identifier),
       ),
       preceded(multispace0, char('{')),
@@ -32,6 +31,7 @@ mod tests {
   use super::*;
 
   use pretty_assertions::assert_eq;
+  use std::str::from_utf8;
 
   #[test]
   fn parses_interface_expression() {

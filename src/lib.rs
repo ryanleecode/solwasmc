@@ -4,6 +4,7 @@ mod atom;
 #[allow(dead_code)]
 mod delimiter;
 mod expression;
+#[allow(dead_code)]
 mod keyword;
 #[allow(dead_code)]
 mod reserved;

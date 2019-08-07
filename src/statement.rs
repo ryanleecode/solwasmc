@@ -1,9 +1,8 @@
 use crate::atom::{parse_anything_till_semi, parse_identifier, Atom};
 use crate::delimiter::{parse_semicolon, Delimiter};
-use crate::keyword::parse_pragma_token_keyword;
+use crate::keyword::parse_pragma;
 use nom::combinator::map;
 use nom::{named, ws, IResult};
-use std::str::from_utf8;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct PragmaDirective {
@@ -13,7 +12,7 @@ pub struct PragmaDirective {
 
 fn parse_pragma_statement(i: &[u8]) -> IResult<&[u8], Box<PragmaDirective>> {
   named!(tuple<&[u8], (Atom, Atom, Atom, Delimiter)>, ws!(tuple!(
-        parse_pragma_token_keyword, parse_identifier, parse_anything_till_semi, parse_semicolon)));
+        parse_pragma, parse_identifier, parse_anything_till_semi, parse_semicolon)));
   map(tuple, |t| {
     let (_, identifier, version, _) = t;
     Box::new(PragmaDirective {
@@ -27,6 +26,7 @@ fn parse_pragma_statement(i: &[u8]) -> IResult<&[u8], Box<PragmaDirective>> {
 mod tests {
   use super::*;
 
+  use std::str::from_utf8;
   use pretty_assertions::assert_eq;
 
   #[test]
