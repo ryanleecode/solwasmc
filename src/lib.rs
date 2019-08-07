@@ -1,12 +1,11 @@
 use wasm_bindgen::prelude::*;
-use logos::Logos;
 
 mod token;
+mod delimeter;
 mod pragma_directive;
-use token::Token;
 
 pub fn compile(assem_code: &str) -> &str {
-    let mut lexer = Token::lexer(assem_code);
+/*    let mut lexer = Token::lexer(assem_code);
 
     while lexer.token != Token::End {
         if lexer.token == Token::Error {
@@ -15,17 +14,16 @@ pub fn compile(assem_code: &str) -> &str {
         }
         println!("{}", lexer.slice());
         lexer.advance();
-    }
+    }*/
     return "";
 }
 
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use itertools::Itertools;
     use crate::compile;
 
-    use pretty_assertions::{assert_eq, assert_ne};
+    use pretty_assertions::{assert_eq};
 
     #[test]
     fn generates_bytecode_for_testfile_1() {
