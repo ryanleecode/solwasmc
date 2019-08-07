@@ -1,3 +1,8 @@
+def snake_to_upper_camel(s):
+    words = s.split("_")
+    return "".join([word.lower().capitalize() for word in words])
+
+
 print("// GENERATED: DO NOT EDIT")
 print("""use nom::{{
     named,
@@ -16,14 +21,14 @@ with open('delimiter.txt') as f:
 pub enum Delimiter {""")
     for line in lines:
         name, _ = line.rstrip().split(" ")
-        print(f"\t{name.upper()},")
+        print(f"\t{snake_to_upper_camel(name)},")
     print("}")
     print("")
     for line in lines:
         name, token = line.rstrip().split(" ")
         print(f"""pub fn parse_{name}(i: &[u8]) -> IResult<&[u8], Delimiter> {{
     named!(semi, tag!(r#"{token}"#));
-    map(semi, |_| Delimiter::{name.upper()})(i)
+    map(semi, |_| Delimiter::{snake_to_upper_camel(name)})(i)
 }}""")
         print("")
     print("#[cfg(test)]")
@@ -37,6 +42,6 @@ pub enum Delimiter {""")
 \t    let (remaining, delim) = parse_{name}(input.as_bytes()).ok().unwrap();
 \t    assert_eq!(
 \t        (from_utf8(remaining).unwrap(), delim),
-\t        ("a", Delimiter::{name.upper()}))
+\t        ("a", Delimiter::{snake_to_upper_camel(name)}))
 \t}}""")
 print("}")
