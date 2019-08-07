@@ -33,7 +33,7 @@ pub enum ElementaryTypeName {""")
         "mod tests {\n\tuse super::*;\n\tuse std::str::from_utf8;\n")
     for line in lines:
         print(f"""\t#[test]
-\tfn parses_{line}() {{
+\tfn parses_{line.lower()}() {{
 \t    let input = r#"{line}a"#;
 \t    let (remaining, name) = parse_{line.lower()}(input.as_bytes()).ok().unwrap();
 \t    assert_eq!(
