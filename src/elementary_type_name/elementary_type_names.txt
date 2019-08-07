@@ -1,0 +1,8 @@
+address
+bool
+string
+Int
+Uint
+Byte
+Fixed
+Ufixed

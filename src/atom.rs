@@ -1,9 +1,12 @@
+use crate::{{
+  delimiter::Delimiter,
+  elementary_type_name::ElementaryTypeName,
+}};
 use nom::character::is_alphanumeric;
 use nom::combinator::map;
 use nom::{named, take_until1, take_while, IResult};
 use std::fmt;
 use std::str::from_utf8;
-use crate::delimiter::Delimiter;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Atom {
@@ -12,6 +15,7 @@ pub enum Atom {
   Identifier(String),
   Anything(String),
   Delimiter(Delimiter),
+  ElementaryTypeName(ElementaryTypeName),
 }
 
 impl fmt::Display for Atom {
