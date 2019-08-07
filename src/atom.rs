@@ -1,7 +1,6 @@
-use crate::delimiter::{parse_semicolon, Delimiter};
 use nom::character::is_alphanumeric;
 use nom::combinator::map;
-use nom::{named, tag, take_until1, take_while, ws, IResult};
+use nom::{named, take_until1, take_while, IResult};
 use std::fmt;
 use std::str::from_utf8;
 

@@ -1,7 +1,6 @@
 use crate::atom::parse_identifier;
 use crate::keyword::parse_interface_keyword;
 use nom::character::complete::{char, multispace0, multispace1};
-use nom::delimited;
 use nom::sequence::preceded;
 use nom::IResult;
 use nom::{combinator::map, sequence::delimited};

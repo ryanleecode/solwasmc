@@ -1,10 +1,8 @@
 use crate::atom::{parse_anything_till_semi, parse_identifier, Atom};
 use crate::delimiter::{parse_semicolon, Delimiter};
 use crate::keyword::parse_pragma_token_keyword;
-use nom::character::is_alphanumeric;
 use nom::combinator::map;
-use nom::{named, tag, take_until1, take_while, ws, IResult};
-use std::fmt;
+use nom::{named, ws, IResult};
 use std::str::from_utf8;
 
 #[derive(Debug, PartialEq, Clone)]
