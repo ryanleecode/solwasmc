@@ -2,7 +2,8 @@ use wasm_bindgen::prelude::*;
 
 mod token;
 mod delimeter;
-mod pragma_directive;
+mod atom;
+mod statement;
 
 pub fn compile(assem_code: &str) -> &str {
 /*    let mut lexer = Token::lexer(assem_code);
