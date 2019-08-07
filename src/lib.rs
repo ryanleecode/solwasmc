@@ -5,6 +5,7 @@ mod delimeter;
 mod atom;
 mod statement;
 mod keyword;
+mod expression;
 
 pub fn compile(assem_code: &str) -> &str {
 /*    let mut lexer = Token::lexer(assem_code);
