@@ -1,0 +1,10 @@
+period .
+semicolon ;
+comma ,
+quotation "
+left_parentheses (
+right_parentheses )
+left_brace {
+right_brace }
+left_bracket [
+right_bracket ]
