@@ -6,6 +6,7 @@ mod atom;
 mod statement;
 mod keyword;
 mod expression;
+mod reserved;
 
 pub fn compile(assem_code: &str) -> &str {
 /*    let mut lexer = Token::lexer(assem_code);

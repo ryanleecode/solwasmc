@@ -7,6 +7,7 @@ use std::str::from_utf8;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Atom {
+    Reserved(String),
     Keyword(String),
     Identifier(String),
     Anything(String)
