@@ -109,6 +109,7 @@ fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractDefinition> {
 mod tests {
     use super::*;
 
+    use crate::elementary_type_name::ElementaryTypeName;
     use pretty_assertions::assert_eq;
     use std::str::from_utf8;
 
@@ -169,17 +170,85 @@ mod tests {
     #[test]
     fn parses_parameter_with_type_only() {
         let input = "bool   \n";
-        let (remaining, param) = parse_parameter(input.as_bytes()).ok().unwrap();
-        assert_eq!(
-            (from_utf8(remaining).unwrap(), param),
-            (
-                "",
-                Box::new(Parameter {
-                    typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
-                    storage_location: None,
-                    identifier: None,
-                })
+        let result = parse_parameter(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, param) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), param),
+                (
+                    "",
+                    Box::new(Parameter {
+                        typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
+                        storage_location: None,
+                        identifier: None,
+                    })
+                )
             )
-        )
+        }
+    }
+
+    #[test]
+    fn parses_parameter_list_no_params() {
+        let input = "(    )";
+        let result = parse_parameter_list(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, params) = result.ok().unwrap();
+            assert_eq!((from_utf8(remaining).unwrap(), params), ("", Vec::new()))
+        }
+    }
+
+    #[test]
+    fn parses_parameter_list_one_param() {
+        let input = "(   address   )";
+        let result = parse_parameter_list(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, params) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), params),
+                (
+                    "",
+                    vec![Box::new(Parameter {
+                        typename: TypeName::ElementaryTypeName(ElementaryTypeName::Address),
+                        storage_location: None,
+                        identifier: None
+                    })]
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_parameter_list_mutliple_params() {
+        let input = "(address   to   ,   uint   age)";
+        let result = parse_parameter_list(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, params) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), params),
+                (
+                    "",
+                    vec![
+                        Box::new(Parameter {
+                            typename: TypeName::ElementaryTypeName(ElementaryTypeName::Address),
+                            storage_location: None,
+                            identifier: Some("to".to_string()),
+                        }),
+                        Box::new(Parameter {
+                            typename: TypeName::ElementaryTypeName(ElementaryTypeName::Uint),
+                            storage_location: None,
+                            identifier: Some("age".to_string()),
+                        })
+                    ]
+                )
+            )
+        }
     }
 }
