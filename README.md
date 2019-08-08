@@ -39,7 +39,7 @@ solc-assem-wasm
 
 - [ ] `TypeName = ElementaryTypeName | UserDefinedTypeName | Mapping | ArrayTypeName | FunctionTypeName | ( 'address' 'payable' )`
 
-- [ ] `UserDefinedTypeName = Identifier ( '.' Identifier )*`
+- [x] `UserDefinedTypeName = Identifier ( '.' Identifier )*`
 
 - [ ] `Mapping = 'mapping' '(' ElementaryTypeName '=>' TypeName ')'`
 - [ ] `ArrayTypeName = TypeName '[' Expression? ']'`
