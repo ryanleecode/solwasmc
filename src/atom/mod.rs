@@ -1,12 +1,21 @@
 use crate::{{
-  delimiter::Delimiter,
-  elementary_type_name::ElementaryTypeName,
+  atom::delimiter::Delimiter,
+  atom::elementary_type_name::ElementaryTypeName,
 }};
 use nom::character::is_alphanumeric;
 use nom::combinator::map;
 use nom::{named, take_until1, take_while, IResult};
 use std::fmt;
 use std::str::from_utf8;
+
+#[allow(dead_code)]
+pub mod delimiter;
+#[allow(dead_code)]
+pub mod reserved;
+#[allow(dead_code)]
+pub mod keyword;
+#[allow(dead_code)]
+pub mod elementary_type_name;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Atom {

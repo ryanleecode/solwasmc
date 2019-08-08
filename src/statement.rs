@@ -1,6 +1,10 @@
-use crate::atom::{parse_anything_till_semi, parse_identifier, Atom};
-use crate::delimiter::{parse_semicolon, Delimiter};
-use crate::keyword::parse_pragma;
+use crate::atom::{
+  Atom,
+  keyword::{parse_pragma},
+  delimiter::{parse_semicolon, Delimiter},
+  parse_anything_till_semi,
+  parse_identifier,
+};
 use nom::combinator::map;
 use nom::{named, ws, IResult};
 
