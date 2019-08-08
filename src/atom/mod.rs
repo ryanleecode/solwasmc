@@ -8,6 +8,7 @@ use nom::{
         is_alphanumeric,
     },
     combinator::map,
+    multi::separated_nonempty_list,
     named,
     sequence::{delimited, preceded},
     take_until1, take_while, IResult,
@@ -63,10 +64,9 @@ impl fmt::Display for Atom {
 }
 
 pub fn parse_user_defined_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
-    map(
-        delimited(parse_identifier, char('.'), parse_identifier),
-        |_| TypeName::UserDefinedTypeName,
-    )(i)
+    map(separated_nonempty_list(char('.'), parse_identifier), |_| {
+        TypeName::UserDefinedTypeName
+    })(i)
 }
 
 pub fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], Atom> {
@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn parses_user_defined_type_name() {
-        let input = "OpenZepp.ERC20 {";
+        let input = "OpenZepp.ERC20.ABC {";
         let (remaining, typename) = parse_user_defined_type_name(input.as_bytes()).ok().unwrap();
         assert_eq!(
             (from_utf8(remaining).unwrap(), typename),
