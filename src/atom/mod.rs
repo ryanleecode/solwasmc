@@ -2,9 +2,16 @@ use crate::atom::{
     delimiter::Delimiter, elementary_type_name::ElementaryTypeName,
     storage_location::StorageLocation,
 };
-use nom::character::is_alphanumeric;
-use nom::combinator::map;
-use nom::{named, take_until1, take_while, IResult};
+use nom::{
+    character::{
+        complete::{char, multispace0, multispace1},
+        is_alphanumeric,
+    },
+    combinator::map,
+    named,
+    sequence::{delimited, preceded},
+    take_until1, take_while, IResult,
+};
 use std::fmt;
 use std::str::from_utf8;
 
@@ -19,16 +26,19 @@ pub mod reserved;
 #[allow(dead_code)]
 pub mod storage_location;
 
+pub type Identifier = String;
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum TypeName {
     ElementaryTypeName(ElementaryTypeName),
+    UserDefinedTypeName,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Atom {
     Reserved(String),
     Keyword(String),
-    Identifier(String),
+    Identifier(Identifier),
     Anything(String),
     Delimiter(Delimiter),
     TypeName(TypeName),
@@ -46,6 +56,13 @@ impl fmt::Display for Atom {
         }
         write!(f, "{}", word)
     }
+}
+
+pub fn parse_user_defined_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
+    map(
+        delimited(parse_identifier, char('.'), parse_identifier),
+        |_| TypeName::UserDefinedTypeName,
+    )(i)
 }
 
 pub fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], Atom> {
@@ -87,6 +104,16 @@ mod tests {
         assert_eq!(
             (from_utf8(remaining).unwrap(), atom),
             (";", Atom::Anything("^0.5.6!@#$%^&*()_+=".to_string()))
+        )
+    }
+
+    #[test]
+    fn parses_user_defined_type_name() {
+        let input = "OpenZepp.ERC20 {";
+        let (remaining, typename) = parse_user_defined_type_name(input.as_bytes()).ok().unwrap();
+        assert_eq!(
+            (from_utf8(remaining).unwrap(), typename),
+            (" {", TypeName::UserDefinedTypeName)
         )
     }
 }
