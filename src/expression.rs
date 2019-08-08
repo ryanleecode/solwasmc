@@ -1,6 +1,8 @@
-use crate::atom::parse_identifier;
-use crate::keyword::parse_interface;
-use crate::elementary_type_name::ElementaryTypeName;
+use crate::atom::{
+  parse_identifier,
+  keyword::{parse_interface},
+  elementary_type_name::{ElementaryTypeName}
+};
 use nom::character::complete::{char, multispace0, multispace1};
 use nom::sequence::preceded;
 use nom::IResult;
@@ -18,10 +20,7 @@ pub enum ContractDefinition {
 fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractDefinition> {
   map(
     delimited(
-      preceded(
-        parse_interface,
-        preceded(multispace1, parse_identifier),
-      ),
+      preceded(parse_interface, preceded(multispace1, parse_identifier)),
       preceded(multispace0, char('{')),
       preceded(multispace0, char('}')),
     ),
