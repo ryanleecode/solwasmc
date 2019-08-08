@@ -4,12 +4,13 @@ def snake_to_upper_camel(s):
 
 
 print("// GENERATED: DO NOT EDIT")
-print("""use nom::{{
-named,
-tag,
-IResult,
-combinator::{{map}}
-}};
+print("""use nom::{
+    named,
+    tag,
+    IResult,
+    combinator::{map},
+    branch::{alt}
+};
 """)
 with open('storage_locations.txt') as f:
     lines = [line.rstrip() for line in f]
@@ -24,10 +25,17 @@ pub enum StorageLocation {""")
     print("")
     for line in lines:
         print(f"""pub fn parse_{line.lower()}(i: &[u8]) -> IResult<&[u8], StorageLocation> {{
-named!(semi, tag!(r#"{line}"#));
-map(semi, |_| StorageLocation::{snake_to_upper_camel(line)})(i)
+    named!(semi, tag!(r#"{line}"#));
+    map(semi, |_| StorageLocation::{snake_to_upper_camel(line)})(i)
 }}""")
         print("")
+    print(
+        "pub fn parse_storage_location(i: &[u8]) -> IResult<&[u8], StorageLocation> {")
+    print("\talt((")
+    for line in lines:
+        print(f"\t\tparse_{line.lower()},")
+    print("\t))(i)")
+    print("}")
     print("#[cfg(test)]")
     print(
         "mod tests {\n\tuse super::*;\n\tuse std::str::from_utf8;\n")
