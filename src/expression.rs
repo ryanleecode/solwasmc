@@ -4,7 +4,7 @@ use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
     character::complete::{char, multispace0, multispace1},
-    combinator::map,
+    combinator::{map, opt},
     multi::separated_nonempty_list,
     sequence::{delimited, preceded, tuple},
     IResult,
@@ -55,15 +55,15 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
     map(
         tuple((
             parse_type_name,
-            preceded(multispace1, parse_storage_location),
-            preceded(multispace1, parse_identifier),
+            opt(preceded(multispace1, parse_storage_location)),
+            opt(preceded(multispace1, parse_identifier)),
         )),
         |s| {
             let (typename, storage_location, identifier) = s;
             Box::new(Parameter {
-                typename: typename,
-                storage_location: Some(storage_location),
-                identifier: Some(identifier.to_string()),
+                typename,
+                storage_location,
+                identifier: identifier.map(|id| id.to_string()),
             })
         },
     )(i)
@@ -118,6 +118,23 @@ mod tests {
                 Box::new(Parameter {
                     typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
                     storage_location: Some(StorageLocation::Memory),
+                    identifier: Some("isWorking".to_string()),
+                })
+            )
+        )
+    }
+
+    #[test]
+    fn parses_parameter_with_identifier_only() {
+        let input = "bool isWorking\n";
+        let (remaining, param) = parse_parameter(input.as_bytes()).ok().unwrap();
+        assert_eq!(
+            (from_utf8(remaining).unwrap(), param),
+            (
+                "\n",
+                Box::new(Parameter {
+                    typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
+                    storage_location: None,
                     identifier: Some("isWorking".to_string()),
                 })
             )
