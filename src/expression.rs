@@ -5,7 +5,7 @@ use nom::{
     branch::alt,
     character::complete::{char, multispace0, multispace1},
     combinator::{complete, flat_map, map},
-    multi::{many0, separated_nonempty_list},
+    multi::{many0, separated_list, separated_nonempty_list},
     sequence::{delimited, preceded, terminated, tuple},
     IResult,
 };
@@ -89,10 +89,7 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
 
 fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Box<Parameter>>> {
     terminated(
-        preceded(
-            char('('),
-            separated_nonempty_list(char(','), parse_parameter),
-        ),
+        preceded(char('('), separated_list(char(','), parse_parameter)),
         char(')'),
     )(i)
 }
