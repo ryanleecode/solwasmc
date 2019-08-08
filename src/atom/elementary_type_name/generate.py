@@ -29,7 +29,7 @@ pub enum ElementaryTypeName {""")
   map(semi, |_| ElementaryTypeName::{snake_to_upper_camel(line)})(i)
 }}""")
     print(
-        "pub fn parse_elementary_type_name(i: &[u8]) -> IResult<&[u8], ElementaryTypeName> {")
+        "pub fn parse(i: &[u8]) -> IResult<&[u8], ElementaryTypeName> {")
     print("\talt((")
     for line in lines:
         print(f"\t\tparse_{line.lower()},")
