@@ -24,7 +24,7 @@ pub enum ElementaryTypeName {""")
     print("}")
     print("")
     for line in lines:
-        print(f"""pub fn parse_{line.lower()}(i: &[u8]) -> IResult<&[u8], ElementaryTypeName> {{
+        print(f"""fn parse_{line.lower()}(i: &[u8]) -> IResult<&[u8], ElementaryTypeName> {{
   named!(semi, tag!(r#"{line}"#));
   map(semi, |_| ElementaryTypeName::{snake_to_upper_camel(line)})(i)
 }}""")
