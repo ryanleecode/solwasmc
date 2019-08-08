@@ -4,12 +4,13 @@ def snake_to_upper_camel(s):
 
 
 print("// GENERATED: DO NOT EDIT")
-print("""use nom::{{
+print("""use nom::{
   named,
   tag,
   IResult,
-  combinator::{{map}}
-}};
+  combinator::{map},
+  branch::{alt}
+};
 """)
 with open('elementary_type_names.txt') as f:
     lines = [line.rstrip() for line in f]
@@ -27,7 +28,15 @@ pub enum ElementaryTypeName {""")
   named!(semi, tag!(r#"{line}"#));
   map(semi, |_| ElementaryTypeName::{snake_to_upper_camel(line)})(i)
 }}""")
-        print("")
+    print(
+        "pub fn parse_elementary_type_name(i: &[u8]) -> IResult<&[u8], ElementaryTypeName> {")
+    print("\talt((")
+    for line in lines:
+        print(f"\t\tparse_{line.lower()},")
+    print("\t))(i)")
+    print("}")
+
+    print("")
     print("#[cfg(test)]")
     print(
         "mod tests {\n\tuse super::*;\n\tuse std::str::from_utf8;\n")
