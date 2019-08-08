@@ -44,7 +44,7 @@ solc-assem-wasm
 - [ ] `Mapping = 'mapping' '(' ElementaryTypeName '=>' TypeName ')'`
 - [ ] `ArrayTypeName = TypeName '[' Expression? ']'`
 - [ ] `FunctionTypeName = 'function' FunctionTypeParameterList ( 'internal' | 'external' | StateMutability )* ( 'returns' FunctionTypeParameterList )?`
-- [ ] `StorageLocation = 'memory' | 'storage' | 'calldata'`
+- [x] `StorageLocation = 'memory' | 'storage' | 'calldata'`
 - [ ] `StateMutability = 'pure' | 'view' | 'payable'`
 
 - [ ] `Block = '{' Statement* '}'`
