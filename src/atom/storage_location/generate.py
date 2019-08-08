@@ -24,7 +24,7 @@ pub enum StorageLocation {""")
     print("}")
     print("")
     for line in lines:
-        print(f"""pub fn parse_{line.lower()}(i: &[u8]) -> IResult<&[u8], StorageLocation> {{
+        print(f"""fn parse_{line.lower()}(i: &[u8]) -> IResult<&[u8], StorageLocation> {{
     named!(semi, tag!(r#"{line}"#));
     map(semi, |_| StorageLocation::{snake_to_upper_camel(line)})(i)
 }}""")
