@@ -32,6 +32,10 @@ pub type Identifier = String;
 pub enum TypeName {
     ElementaryTypeName(ElementaryTypeName),
     UserDefinedTypeName,
+    // TODO: Mapping
+    // TODO: ArrayTypeName
+    // TODO: FunctionTypeName
+    // TODO: ( 'address' 'payable' )
 }
 
 #[derive(Debug, PartialEq, Clone)]
