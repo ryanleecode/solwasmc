@@ -1,9 +1,12 @@
 use crate::atom::parse_identifier;
 use crate::keyword::parse_interface;
+use crate::elementary_type_name::ElementaryTypeName;
 use nom::character::complete::{char, multispace0, multispace1};
 use nom::sequence::preceded;
 use nom::IResult;
 use nom::{combinator::map, sequence::delimited};
+
+pub type ElementaryTypeNameExpression = ElementaryTypeName;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ContractDefinition {
