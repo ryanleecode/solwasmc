@@ -1,16 +1,6 @@
-use crate::atom::{
-    delimiter::Delimiter, elementary_type_name::ElementaryTypeName,
-    storage_location::StorageLocation,
-};
+use crate::atom::{delimiter::Delimiter, storage_location::StorageLocation};
 use nom::{
-    character::{
-        complete::{char, multispace0, multispace1},
-        is_alphanumeric,
-    },
-    combinator::map,
-    multi::separated_nonempty_list,
-    named,
-    sequence::{delimited, preceded},
+    character::is_alphanumeric, combinator::map, multi::separated_nonempty_list, named,
     take_until1, take_while, IResult,
 };
 use std::fmt;
@@ -30,23 +20,12 @@ pub mod storage_location;
 pub type Identifier = String;
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum TypeName {
-    ElementaryTypeName(ElementaryTypeName),
-    UserDefinedTypeName,
-    // TODO: Mapping
-    // TODO: ArrayTypeName
-    // TODO: FunctionTypeName
-    // TODO: ( 'address' 'payable' )
-}
-
-#[derive(Debug, PartialEq, Clone)]
 pub enum Atom {
     Reserved(String),
     Keyword(String),
     Identifier(Identifier),
     Anything(String),
     Delimiter(Delimiter),
-    TypeName(TypeName),
     StorageLocation(StorageLocation),
 }
 
@@ -61,12 +40,6 @@ impl fmt::Display for Atom {
         }
         write!(f, "{}", word)
     }
-}
-
-pub fn parse_user_defined_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
-    map(separated_nonempty_list(char('.'), parse_identifier), |_| {
-        TypeName::UserDefinedTypeName
-    })(i)
 }
 
 pub fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], Atom> {
@@ -108,16 +81,6 @@ mod tests {
         assert_eq!(
             (from_utf8(remaining).unwrap(), atom),
             (";", Atom::Anything("^0.5.6!@#$%^&*()_+=".to_string()))
-        )
-    }
-
-    #[test]
-    fn parses_user_defined_type_name() {
-        let input = "OpenZepp.ERC20.ABC {";
-        let (remaining, typename) = parse_user_defined_type_name(input.as_bytes()).ok().unwrap();
-        assert_eq!(
-            (from_utf8(remaining).unwrap(), typename),
-            (" {", TypeName::UserDefinedTypeName)
         )
     }
 }
