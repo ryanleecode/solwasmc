@@ -3,9 +3,8 @@ use crate::elementary_type_name::{parse as parse_elementary_type_name, Elementar
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
-    bytes::complete::take,
     character::complete::{char, multispace0, multispace1},
-    combinator::{flat_map, map, opt, complete},
+    combinator::{flat_map, map, complete},
     multi::separated_nonempty_list,
     sequence::{delimited, preceded, tuple},
     IResult,
