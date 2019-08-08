@@ -30,7 +30,7 @@ solc-assem-wasm
 - [ ] `Parameter = TypeName StorageLocation? Identifier?`
 
 - [ ] `EventParameterList = '(' ( EventParameter (',' EventParameter )* )? ')'`
-- [ ]`EventParameter = TypeName 'indexed'? Identifier?`
+- [ ] `EventParameter = TypeName 'indexed'? Identifier?`
 
 - [ ] `FunctionTypeParameterList = '(' ( FunctionTypeParameter (',' FunctionTypeParameter )* )? ')'`
 - [ ] `FunctionTypeParameter = TypeName StorageLocation?`
