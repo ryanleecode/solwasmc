@@ -1,21 +1,14 @@
-use crate::atom::{delimiter::Delimiter, storage_location::StorageLocation};
-use nom::{
-    character::is_alphanumeric, combinator::map, multi::separated_nonempty_list, named,
-    take_until1, take_while, IResult,
-};
+use crate::atom::{delimiter::Delimiter};
+use nom::{character::is_alphanumeric, combinator::map, named, take_until1, take_while, IResult};
 use std::fmt;
 use std::str::from_utf8;
 
 #[allow(dead_code)]
 pub mod delimiter;
 #[allow(dead_code)]
-pub mod elementary_type_name;
-#[allow(dead_code)]
 pub mod keyword;
 #[allow(dead_code)]
 pub mod reserved;
-#[allow(dead_code)]
-pub mod storage_location;
 
 pub type Identifier = String;
 
@@ -26,7 +19,6 @@ pub enum Atom {
     Identifier(Identifier),
     Anything(String),
     Delimiter(Delimiter),
-    StorageLocation(StorageLocation),
 }
 
 impl fmt::Display for Atom {

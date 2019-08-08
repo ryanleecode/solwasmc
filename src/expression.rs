@@ -1,6 +1,6 @@
-use crate::atom::{
-    elementary_type_name::ElementaryTypeName, keyword::parse_interface, parse_identifier,
-};
+use crate::atom::{keyword::parse_interface, parse_identifier};
+use crate::elementary_type_name::ElementaryTypeName;
+use crate::storage_location::StorageLocation;
 use nom::{
     combinator::map,
     multi::separated_nonempty_list,
