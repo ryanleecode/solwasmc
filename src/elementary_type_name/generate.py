@@ -17,7 +17,7 @@ with open('elementary_type_names.txt') as f:
     for line in lines:
         print(f"const {line.upper()}: &str = r#\"{line}\"#;")
     print("")
-    print("""#[derive(Debug, PartialEq, Clone)]
+    print("""#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ElementaryTypeName {""")
     for line in lines:
         print(f"\t{snake_to_upper_camel(line)},")
