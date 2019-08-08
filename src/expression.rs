@@ -4,9 +4,9 @@ use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
     character::complete::{char, multispace0, multispace1},
-    combinator::{flat_map, map, complete},
-    multi::separated_nonempty_list,
-    sequence::{delimited, preceded, tuple},
+    combinator::{complete, flat_map, map},
+    multi::{many0, separated_nonempty_list},
+    sequence::{delimited, preceded, terminated, tuple},
     IResult,
 };
 
@@ -86,6 +86,17 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
         ))
     })(i)
 }
+
+fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Box<Parameter>>> {
+    terminated(
+        preceded(
+            char('('),
+            separated_nonempty_list(char(','), parse_parameter),
+        ),
+        char(')'),
+    )(i)
+}
+
 fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractDefinition> {
     map(
         delimited(
