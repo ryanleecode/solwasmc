@@ -1,7 +1,10 @@
-use crate::{{
-  atom::delimiter::Delimiter,
-  atom::elementary_type_name::ElementaryTypeName,
-}};
+use crate::{
+  atom::{
+    delimiter::Delimiter,
+    elementary_type_name::ElementaryTypeName,
+    storage_location::StorageLocation,
+  }
+};
 use nom::character::is_alphanumeric;
 use nom::combinator::map;
 use nom::{named, take_until1, take_while, IResult};
@@ -11,11 +14,13 @@ use std::str::from_utf8;
 #[allow(dead_code)]
 pub mod delimiter;
 #[allow(dead_code)]
-pub mod reserved;
+pub mod elementary_type_name;
 #[allow(dead_code)]
 pub mod keyword;
 #[allow(dead_code)]
-pub mod elementary_type_name;
+pub mod reserved;
+#[allow(dead_code)]
+pub mod storage_location;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Atom {
@@ -25,6 +30,7 @@ pub enum Atom {
   Anything(String),
   Delimiter(Delimiter),
   ElementaryTypeName(ElementaryTypeName),
+  StorageLocation(StorageLocation)
 }
 
 impl fmt::Display for Atom {
