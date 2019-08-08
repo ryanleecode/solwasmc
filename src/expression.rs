@@ -89,8 +89,14 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
 
 fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Box<Parameter>>> {
     terminated(
-        preceded(char('('), separated_list(char(','), parse_parameter)),
-        char(')'),
+        preceded(
+            char('('),
+            preceded(
+                multispace0,
+                separated_list(preceded(multispace0, char(',')), parse_parameter),
+            ),
+        ),
+        preceded(multispace0, char(')')),
     )(i)
 }
 
