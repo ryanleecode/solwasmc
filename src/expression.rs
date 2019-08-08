@@ -5,7 +5,7 @@ use nom::{
     branch::alt,
     bytes::complete::take,
     character::complete::{char, multispace0, multispace1},
-    combinator::{flat_map, map, opt},
+    combinator::{flat_map, map, opt, complete},
     multi::separated_nonempty_list,
     sequence::{delimited, preceded, tuple},
     IResult,
@@ -56,7 +56,7 @@ pub struct Parameter {
 pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
     flat_map(parse_type_name, |typename| {
         alt((
-            map(
+            complete(map(
                 tuple((
                     preceded(multispace1, parse_storage_location),
                     preceded(multispace1, parse_identifier),
@@ -69,14 +69,14 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
                         identifier: Some(id.to_string()),
                     })
                 },
-            ),
-            map(preceded(multispace1, parse_identifier), move |id| {
+            )),
+            complete(map(preceded(multispace1, parse_identifier), move |id| {
                 Box::new(Parameter {
                     typename: typename,
                     storage_location: None,
                     identifier: Some(id.to_string()),
                 })
-            }),
+            })),
             map(multispace0, move |_| {
                 Box::new(Parameter {
                     typename: typename,
