@@ -30,7 +30,7 @@ pub enum StorageLocation {""")
 }}""")
         print("")
     print(
-        "pub fn parse_storage_location(i: &[u8]) -> IResult<&[u8], StorageLocation> {")
+        "pub fn parse(i: &[u8]) -> IResult<&[u8], StorageLocation> {")
     print("\talt((")
     for line in lines:
         print(f"\t\tparse_{line.lower()},")
