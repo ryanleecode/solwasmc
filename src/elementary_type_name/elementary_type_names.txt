@@ -1,8 +1,8 @@
 address
 bool
 string
-Int
-Uint
-Byte
-Fixed
-Ufixed
+int
+uint
+byte
+fixed
+ufixed
