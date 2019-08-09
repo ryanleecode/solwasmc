@@ -1,0 +1,3 @@
+pure
+view
+payable
