@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 
 mod atom;
 mod expression;
-mod statement;
+mod directive;
 mod token;
 #[allow(dead_code)]
 mod storage_location;
