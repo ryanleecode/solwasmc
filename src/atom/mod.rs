@@ -1,5 +1,5 @@
-use crate::atom::{delimiter::Delimiter};
-use nom::{character::is_alphanumeric, combinator::map, named, take_until1, take_while, IResult};
+use crate::atom::delimiter::Delimiter;
+use nom::{character::is_alphanumeric, combinator::map, named, take_until1, take_while1, IResult};
 use std::fmt;
 use std::str::from_utf8;
 
@@ -35,7 +35,7 @@ impl fmt::Display for Atom {
 }
 
 pub fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], Atom> {
-    named!(alphanum, take_while!(is_alphanumeric));
+    named!(alphanum, take_while1!(is_alphanumeric));
     map(
         |b: &[u8]| alphanum(b),
         |b: &[u8]| Atom::Identifier(from_utf8(b).unwrap().to_string()),
@@ -64,6 +64,13 @@ mod tests {
             (from_utf8(remaining).unwrap(), atom),
             (" ^0.5.6;", Atom::Identifier("solidity".to_string()))
         )
+    }
+
+    #[test]
+    fn parse_identifier_should_never_be_an_empty_str() {
+        let input = "           ";
+        let result = parse_identifier(input.as_bytes());
+        result.expect_err("should be None");
     }
 
     #[test]
