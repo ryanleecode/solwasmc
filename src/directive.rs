@@ -15,12 +15,12 @@ pub struct PragmaDirective {
 }
 
 fn parse_pragma_directive(i: &[u8]) -> IResult<&[u8], Box<PragmaDirective>> {
-  named!(tuple<&[u8], (Atom, Atom, Atom, Delimiter)>, ws!(tuple!(
+  named!(tuple<&[u8], (Atom, String, Atom, Delimiter)>, ws!(tuple!(
         parse_pragma, parse_identifier, parse_anything_till_semi, parse_semicolon)));
   map(tuple, |t| {
     let (_, identifier, version, _) = t;
     Box::new(PragmaDirective {
-      name: identifier.to_string(),
+      name: identifier,
       value: version.to_string(),
     })
   })(i)

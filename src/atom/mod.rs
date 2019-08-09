@@ -34,11 +34,11 @@ impl fmt::Display for Atom {
     }
 }
 
-pub fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], Atom> {
+pub fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], String> {
     named!(alphanum, take_while1!(is_alphanumeric));
     map(
         |b: &[u8]| alphanum(b),
-        |b: &[u8]| Atom::Identifier(from_utf8(b).unwrap().to_string()),
+        |b: &[u8]| from_utf8(b).unwrap().to_string(),
     )(i)
 }
 
@@ -62,7 +62,7 @@ mod tests {
         let (remaining, atom) = parse_identifier(input.as_bytes()).ok().unwrap();
         assert_eq!(
             (from_utf8(remaining).unwrap(), atom),
-            (" ^0.5.6;", Atom::Identifier("solidity".to_string()))
+            (" ^0.5.6;", "solidity".to_string())
         )
     }
 
