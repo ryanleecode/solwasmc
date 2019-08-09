@@ -116,7 +116,7 @@ solc-assem-wasm
 - [ ] `AssemblyCase = 'case' Literal AssemblyBlock`
 - [ ] `AssemblyDefault = 'default' AssemblyBlock`
 - [ ] `AssemblyForLoop = 'for' AssemblyBlock AssemblyExpression AssemblyBlock AssemblyBlock`
-- [ ] `AssemblyBreakContinue = 'break' | 'continue'`
+- [x] `AssemblyBreakContinue = 'break' | 'continue'`
 - [ ] `AssemblyFunctionCall = Identifier '(' ( AssemblyExpression ( ',' AssemblyExpression )\* )? ')'`
 
 - [ ] `AssemblyIdentifierList = Identifier ( ',' Identifier )*`
