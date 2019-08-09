@@ -93,7 +93,10 @@ fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Box<Parameter>>> {
             char('('),
             preceded(
                 multispace0,
-                separated_list(preceded(multispace0, char(',')), parse_parameter),
+                separated_list(
+                    preceded(multispace0, char(',')),
+                    preceded(multispace0, parse_parameter),
+                ),
             ),
         ),
         preceded(multispace0, char(')')),
@@ -141,7 +144,7 @@ mod tests {
 
     #[test]
     fn parses_fully_qualified_parameter() {
-        let input = "bool memory isWorking\n";
+        let input = "bool     memory     isWorking\n";
         let (remaining, param) = parse_parameter(input.as_bytes()).ok().unwrap();
         assert_eq!(
             (from_utf8(remaining).unwrap(), param),
@@ -158,7 +161,7 @@ mod tests {
 
     #[test]
     fn parses_parameter_with_identifier_only() {
-        let input = "bool isWorking\n";
+        let input = "bool    isWorking\n";
         let (remaining, param) = parse_parameter(input.as_bytes()).ok().unwrap();
         assert_eq!(
             (from_utf8(remaining).unwrap(), param),
