@@ -8,6 +8,7 @@ mod token;
 mod storage_location;
 #[allow(dead_code)]
 mod elementary_type_name;
+mod statement;
 
 pub fn compile(assem_code: &str) -> &str {
   /*    let mut lexer = Token::lexer(assem_code);
