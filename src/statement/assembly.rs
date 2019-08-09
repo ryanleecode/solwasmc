@@ -5,6 +5,7 @@ use nom::{
     combinator::map,
     multi::separated_nonempty_list,
     sequence::preceded,
+    branch::{alt},
     IResult,
 };
 
@@ -27,6 +28,10 @@ fn parse_break(i: &[u8]) -> IResult<&[u8], AssemblyBreakContinue> {
 
 fn parse_continue(i: &[u8]) -> IResult<&[u8], AssemblyBreakContinue> {
     map(tag(CONTINUE), |_| AssemblyBreakContinue::Continue)(i)
+}
+
+fn parse_break_continue(i: &[u8]) -> IResult<&[u8], AssemblyBreakContinue> {
+    alt((parse_break, parse_continue))(i)
 }
 
 #[cfg(test)]
