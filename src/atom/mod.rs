@@ -1,5 +1,8 @@
 use crate::atom::delimiter::Delimiter;
-use nom::{character::is_alphanumeric, combinator::map, named, take_until1, take_while1, IResult};
+use nom::{
+    bytes::complete::take_while1, character::is_alphanumeric, combinator::map, named, take_until1,
+    IResult,
+};
 use std::fmt;
 use std::str::from_utf8;
 
@@ -35,19 +38,14 @@ impl fmt::Display for Atom {
 }
 
 pub fn parse_identifier<'a>(i: &[u8]) -> IResult<&[u8], String> {
-    named!(alphanum, take_while1!(is_alphanumeric));
-    map(
-        |b: &[u8]| alphanum(b),
-        |b: &[u8]| from_utf8(b).unwrap().to_string(),
-    )(i)
+    map(take_while1(is_alphanumeric), |b| {
+        from_utf8(b).unwrap().to_string()
+    })(i)
 }
 
 pub fn parse_anything_till_semi(i: &[u8]) -> IResult<&[u8], Atom> {
-    named!(untilsemi, take_until1!(";"));
-    map(
-        |b: &[u8]| untilsemi(b),
-        |b: &[u8]| Atom::Anything(from_utf8(b).unwrap().to_string()),
-    )(i)
+    named!(x, take_until1!(";"));
+    map(x, |b| Atom::Anything(from_utf8(b).unwrap().to_string()))(i)
 }
 
 #[cfg(test)]
@@ -67,10 +65,27 @@ mod tests {
     }
 
     #[test]
+    fn parses_identifier2() {
+        let input = "aaaa";
+        let (remaining, atom) = parse_identifier(input.as_bytes()).ok().unwrap();
+        assert_eq!(
+            (from_utf8(remaining).unwrap(), atom),
+            ("", "aaaa".to_string())
+        )
+    }
+
+    #[test]
     fn parse_identifier_should_never_be_an_empty_str() {
         let input = "           ";
         let result = parse_identifier(input.as_bytes());
         result.expect_err("should be None");
+    }
+
+    #[test]
+    fn empty_till_semi_should_fail() {
+        let input = ";";
+        let result = parse_anything_till_semi(input.as_bytes());
+        result.expect_err("should fail if theres nothing before the semicolon");
     }
 
     #[test]
