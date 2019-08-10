@@ -1,5 +1,6 @@
 use crate::atom::{keyword::parse_interface, parse_identifier};
 use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName};
+use crate::expression::primary_expr::{parse as parse_primary_expression, PrimaryExpression};
 use crate::literal::{parse as parse_literal, Boolean, Literal, NumberLiteral};
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
@@ -11,6 +12,8 @@ use nom::{
     IResult,
 };
 
+mod primary_expr;
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
     // TODO: PostFix(),
@@ -20,37 +23,13 @@ pub enum Expression {
     PrimaryExpression(PrimaryExpression),
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum PrimaryExpression {
-    BooleanLiteral(Boolean),
-    NumberLiteral(NumberLiteral),
-    // TODO: HexLiteral
-    // TODO Tuple Expression
-    Identifier(String),
-    ElementaryTypeNameExpression(ElementaryTypeNameExpression),
-}
-
 fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
     alt((
         map(parse_member_access, |m| {
             let (exp, mem) = m;
             Expression::MemberAccess(Box::new(exp), mem)
         }),
-        map_res(parse_literal, |l| match l {
-            Literal::Boolean(b) => Ok(Expression::PrimaryExpression(
-                PrimaryExpression::BooleanLiteral(b),
-            )),
-            Literal::Number(n) => Ok(Expression::PrimaryExpression(
-                PrimaryExpression::NumberLiteral(n),
-            )),
-            _ => Err("not a primary expression"),
-        }),
-        map(parse_elementary_type_name, |n| {
-            Expression::PrimaryExpression(PrimaryExpression::ElementaryTypeNameExpression(n))
-        }),
-        map(parse_identifier, |id| {
-            Expression::PrimaryExpression(PrimaryExpression::Identifier(id))
-        }),
+        map(parse_primary_expression, |e| Expression::PrimaryExpression(e))
     ))(i)
 }
 
