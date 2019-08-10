@@ -25,7 +25,6 @@ pub enum Expression {
 }
 
 pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
-    println!("{:#?}", i);
     alt((
         map(parse_member_access, |m| {
             let (exp, mem) = m;
@@ -42,15 +41,11 @@ fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
         separated_pair(take_until("."), char('.'), parse_identifier),
         |x| {
             let (expr, id) = x;
-            println!("trash {:#?}", expr);
-            let derp = parse_expression(expr);
-            println!("jihad");
-            if derp.is_err() {
-                println!("errorz");
-                return Err(derp.unwrap_err());
+            let p_expr = parse_expression(expr);
+            if p_expr.is_err() {
+                return Err(p_expr.unwrap_err());
             } else {
-                let (_, e) = derp.unwrap();
-                println!("success!");
+                let (_, e) = p_expr.unwrap();
                 return Ok((e, id));
             }
         },
@@ -85,7 +80,6 @@ pub fn parse_user_defined_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
 pub fn parse_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
     alt((
         map(parse_elementary_type_name, |e| {
-            // println!("{:#?}", TypeName::ElementaryTypeName(e.clone()));
             TypeName::ElementaryTypeName(e)
         }),
         parse_user_defined_type_name,
