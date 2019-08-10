@@ -1,14 +1,62 @@
 use crate::atom::{keyword::parse_interface, parse_identifier};
 use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName};
+use crate::literal::{parse as parse_literal, Boolean, Literal, NumberLiteral};
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
     character::complete::{char, multispace0, multispace1},
-    combinator::{complete, flat_map, map},
-    multi::{many0, separated_list, separated_nonempty_list},
-    sequence::{delimited, preceded, terminated, tuple},
+    combinator::{complete, flat_map, map, map_res},
+    multi::{separated_list, separated_nonempty_list},
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum Expression {
+    // TODO: PostFix(),
+    // TODO: New(),
+    // TODO: IndexAccess,
+    MemberAccess(Box<Expression>, String),
+    PrimaryExpression(PrimaryExpression),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum PrimaryExpression {
+    BooleanLiteral(Boolean),
+    NumberLiteral(NumberLiteral),
+    // TODO: HexLiteral
+    // TODO Tuple Expression
+    Identifier(String),
+    ElementaryTypeNameExpression(ElementaryTypeNameExpression),
+}
+
+fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
+    alt((
+        map(parse_member_access, |m| {
+            let (exp, mem) = m;
+            Expression::MemberAccess(Box::new(exp), mem)
+        }),
+        map_res(parse_literal, |l| match l {
+            Literal::Boolean(b) => Ok(Expression::PrimaryExpression(
+                PrimaryExpression::BooleanLiteral(b),
+            )),
+            Literal::Number(n) => Ok(Expression::PrimaryExpression(
+                PrimaryExpression::NumberLiteral(n),
+            )),
+            _ => Err("not a primary expression"),
+        }),
+        map(parse_elementary_type_name, |n| {
+            Expression::PrimaryExpression(PrimaryExpression::ElementaryTypeNameExpression(n))
+        }),
+        map(parse_identifier, |id| {
+            Expression::PrimaryExpression(PrimaryExpression::Identifier(id))
+        }),
+    ))(i)
+}
+
+fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
+    separated_pair(parse_expression, char('.'), parse_identifier)(i)
+}
 
 pub type ElementaryTypeNameExpression = ElementaryTypeName;
 
@@ -113,6 +161,8 @@ fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractDefinition> {
         |_| ContractDefinition::Interface,
     )(i)
 }
+
+/* fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Box>> */
 
 #[cfg(test)]
 mod tests {
@@ -259,5 +309,10 @@ mod tests {
                 )
             )
         }
+    }
+
+    #[test]
+    fn parses_member_access() {
+        let input = "";
     }
 }
