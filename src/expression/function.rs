@@ -1,13 +1,21 @@
 use crate::atom::parse_identifier;
 use crate::expression::{parse_expression, Expression};
 use nom::{
-    bytes::complete::tag, character::complete::multispace0, sequence::preceded,
-    sequence::separated_pair, IResult,
+    bytes::complete::tag,
+    character::complete::{char, multispace0},
+    multi::separated_nonempty_list,
+    sequence::preceded,
+    sequence::separated_pair,
+    IResult,
 };
 
 pub type NameValue = (String, Expression);
 
-fn parse_name_value_list(i: &[u8]) -> IResult<&[u8], NameValue> {
+fn parse_name_value_list(i: &[u8]) -> IResult<&[u8], Vec<NameValue>> {
+    separated_nonempty_list(char(','), preceded(multispace0, parse_name_value))(i)
+}
+
+fn parse_name_value(i: &[u8]) -> IResult<&[u8], NameValue> {
     separated_pair(
         parse_identifier,
         preceded(multispace0, tag(":")),
@@ -26,7 +34,7 @@ mod tests {
     #[test]
     fn parses_name_value() {
         let input = b"a     : bool\n";
-        let result = parse_name_value_list(input);
+        let result = parse_name_value(input);
         if result.is_err() {
             result.expect("should parse name value");
         } else {
@@ -43,6 +51,41 @@ mod tests {
                             )
                         )
                     )
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_name_value_list() {
+        let input = b"a: bool, b: bool";
+        let result = parse_name_value_list(input);
+        if result.is_err() {
+            result.expect("should parse name value list");
+        } else {
+            let (remaining, b) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), b),
+                (
+                    "",
+                    vec![
+                        (
+                            "a".to_string(),
+                            Expression::PrimaryExpression(
+                                PrimaryExpression::ElementaryTypeNameExpression(
+                                    ElementaryTypeName::Bool
+                                )
+                            )
+                        ),
+                        (
+                            "b".to_string(),
+                            Expression::PrimaryExpression(
+                                PrimaryExpression::ElementaryTypeNameExpression(
+                                    ElementaryTypeName::Bool
+                                )
+                            )
+                        )
+                    ]
                 )
             )
         }
