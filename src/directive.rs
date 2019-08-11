@@ -12,7 +12,7 @@ pub struct PragmaDirective {
     pub value: String,
 }
 
-fn parse_pragma_directive(i: &[u8]) -> IResult<&[u8], PragmaDirective> {
+pub fn parse_pragma_directive(i: &[u8]) -> IResult<&[u8], PragmaDirective> {
     named!(tuple<&[u8], (Atom, String, Atom, Delimiter)>, ws!(tuple!(
         parse_pragma, parse_identifier, parse_anything_till_semi, parse_semicolon)));
     map(tuple, |t| {
