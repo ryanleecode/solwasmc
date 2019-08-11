@@ -1,14 +1,84 @@
 use crate::atom::{keyword::parse_interface, parse_identifier};
 use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName};
+use crate::expression::{
+    function::{parses_function_call, FunctionCallArguments},
+    primary_expr::{parse as parse_primary_expression, PrimaryExpression},
+};
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
+    bytes::complete::{take_until, tag},
     character::complete::{char, multispace0, multispace1},
-    combinator::{complete, flat_map, map},
-    multi::{many0, separated_list, separated_nonempty_list},
-    sequence::{delimited, preceded, terminated, tuple},
+    combinator::{complete, flat_map, map, map_res},
+    multi::{separated_list, separated_nonempty_list},
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
+
+mod function;
+mod primary_expr;
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum Expression {
+    // TODO: PostFix(),
+    // TODO: New(),
+    // TODO: IndexAccess,
+    MemberAccess(Box<Expression>, String),
+    FunctionCall(Box<Expression>, FunctionCallArguments),
+    // TODO:   ('!' | '~' | 'delete' | '++' | '--' | '+' | '-') Expression
+    // TODO: | Expression '**' Expression
+    // TODO: | Expression ('*' | '/' | '%') Expression
+    // TODO: | Expression ('+' | '-') Expression
+    // TODO: | Expression ('<<' | '>>') Expression
+    // TODO: | Expression '&' Expression
+    // TODO: | Expression '^' Expression
+    // TODO: | Expression '|' Expression
+    // TODO: | Expression ('<' | '>' | '<=' | '>=') Expression
+    // TODO: | Expression ('==' | '!=') Expression
+    // TODO: | Expression '&&' Expression
+    // TODO: | Expression '||' Expression
+    // TODO: | Expression '?' Expression ':' Expression
+    // TODO: | Expression ('=' | '|=' | '^=' | '&=' | '<<=' | '>>=' | '+=' | '-=' | '*=' | '/=' | '%=') Expression
+    // TODO: | PrimaryExpression
+    PrimaryExpression(PrimaryExpression),
+}
+
+pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
+    alt((
+        map(parse_member_access, |m| {
+            let (exp, mem) = m;
+            Expression::MemberAccess(Box::new(exp), mem)
+        }),
+        map(parses_function_call, |f| {
+            let (expr, args) = f;
+            Expression::FunctionCall(Box::new(expr), args)
+        }),
+        delimited(tag("("), parse_expression, tag(")")),
+        map(parse_primary_expression, |e| {
+            Expression::PrimaryExpression(e)
+        }),
+    ))(i)
+}
+
+pub fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Expression>> {
+    separated_nonempty_list(char(','), preceded(multispace0, parse_expression))(i)
+}
+
+fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
+    map_res(
+        separated_pair(take_until("."), char('.'), parse_identifier),
+        |x| {
+            let (expr, id) = x;
+            let p_expr = parse_expression(expr);
+            if p_expr.is_err() {
+                return Err(p_expr.unwrap_err());
+            } else {
+                let (_, e) = p_expr.unwrap();
+                return Ok((e, id));
+            }
+        },
+    )(i)
+}
 
 pub type ElementaryTypeNameExpression = ElementaryTypeName;
 
@@ -38,7 +108,6 @@ pub fn parse_user_defined_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
 pub fn parse_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
     alt((
         map(parse_elementary_type_name, |e| {
-            // println!("{:#?}", TypeName::ElementaryTypeName(e.clone()));
             TypeName::ElementaryTypeName(e)
         }),
         parse_user_defined_type_name,
@@ -113,6 +182,8 @@ fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractDefinition> {
         |_| ContractDefinition::Interface,
     )(i)
 }
+
+/* fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Box>> */
 
 #[cfg(test)]
 mod tests {
@@ -256,6 +327,29 @@ mod tests {
                             identifier: Some("age".to_string()),
                         })
                     ]
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_member_access() {
+        let input = "aaaa.bbbb\n";
+        let result = parse_member_access(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, params) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), params),
+                (
+                    "\n",
+                    (
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "aaaa".to_string()
+                        )),
+                        "bbbb".to_string()
+                    )
                 )
             )
         }

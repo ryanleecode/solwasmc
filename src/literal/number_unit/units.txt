@@ -1,0 +1,10 @@
+wei
+szabo
+finney
+ether
+seconds
+minutes
+hours
+days
+weeks
+years
