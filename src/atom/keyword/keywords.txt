@@ -1,8 +1,5 @@
 import
 pragma
-library
-interface
-contract
 constructor
 assembly
 function

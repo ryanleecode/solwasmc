@@ -1,11 +1,11 @@
 use crate::atom::parse_identifier;
 use nom::{
+    branch::alt,
     bytes::complete::tag,
     character::complete::{char, multispace0},
     combinator::map,
     multi::separated_nonempty_list,
     sequence::preceded,
-    branch::{alt},
     IResult,
 };
 
