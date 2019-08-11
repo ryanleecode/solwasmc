@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 mod atom;
+mod definition;
 mod directive;
 #[allow(dead_code)]
 mod elementary_type_name;

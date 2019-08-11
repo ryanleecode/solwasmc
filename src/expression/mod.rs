@@ -7,7 +7,7 @@ use crate::expression::{
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
-    bytes::complete::{take_until, tag},
+    bytes::complete::{tag, take_until},
     character::complete::{char, multispace0, multispace1},
     combinator::{complete, flat_map, map, map_res},
     multi::{separated_list, separated_nonempty_list},
@@ -81,13 +81,6 @@ fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
 }
 
 pub type ElementaryTypeNameExpression = ElementaryTypeName;
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum ContractDefinition {
-    Contract,
-    Library,
-    Interface,
-}
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TypeName {
@@ -172,19 +165,6 @@ fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Box<Parameter>>> {
     )(i)
 }
 
-fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractDefinition> {
-    map(
-        delimited(
-            preceded(parse_interface, preceded(multispace1, parse_identifier)),
-            preceded(multispace0, char('{')),
-            preceded(multispace0, char('}')),
-        ),
-        |_| ContractDefinition::Interface,
-    )(i)
-}
-
-/* fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Box>> */
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -192,16 +172,6 @@ mod tests {
     use crate::elementary_type_name::ElementaryTypeName;
     use pretty_assertions::assert_eq;
     use std::str::from_utf8;
-
-    #[test]
-    fn parses_interface_expression() {
-        let input = "interface GeneralERC20 { }";
-        let (remaining, def) = parse_interface_expression(input.as_bytes()).ok().unwrap();
-        assert_eq!(
-            (from_utf8(remaining).unwrap(), def),
-            ("", ContractDefinition::Interface)
-        )
-    }
 
     #[test]
     fn parses_user_defined_type_name() {
