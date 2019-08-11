@@ -92,6 +92,12 @@ pub fn parse_statement(i: &[u8]) -> IResult<&[u8], Statement> {
     alt((
         map(parse_block, |x| Statement::Block(x)),
         map(parse_expression, |x| Statement::Expression(x)),
+        map(parse_variable_declaration, |x| {
+            Statement::VariableDeclaration(x)
+        }),
+        map(parse_variable_definition, |x| {
+            Statement::VariableDefinition(x)
+        }),
     ))(i)
 }
 
