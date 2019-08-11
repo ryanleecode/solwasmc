@@ -1,10 +1,13 @@
 use crate::atom::{keyword::parse_interface, parse_identifier};
 use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName};
-use crate::expression::primary_expr::{parse as parse_primary_expression, PrimaryExpression};
+use crate::expression::{
+    function::{parses_function_call, FunctionCallArguments},
+    primary_expr::{parse as parse_primary_expression, PrimaryExpression},
+};
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
-    bytes::complete::take_until,
+    bytes::complete::{take_until, tag},
     character::complete::{char, multispace0, multispace1},
     combinator::{complete, flat_map, map, map_res},
     multi::{separated_list, separated_nonempty_list},
@@ -21,6 +24,22 @@ pub enum Expression {
     // TODO: New(),
     // TODO: IndexAccess,
     MemberAccess(Box<Expression>, String),
+    FunctionCall(Box<Expression>, FunctionCallArguments),
+    // TODO:   ('!' | '~' | 'delete' | '++' | '--' | '+' | '-') Expression
+    // TODO: | Expression '**' Expression
+    // TODO: | Expression ('*' | '/' | '%') Expression
+    // TODO: | Expression ('+' | '-') Expression
+    // TODO: | Expression ('<<' | '>>') Expression
+    // TODO: | Expression '&' Expression
+    // TODO: | Expression '^' Expression
+    // TODO: | Expression '|' Expression
+    // TODO: | Expression ('<' | '>' | '<=' | '>=') Expression
+    // TODO: | Expression ('==' | '!=') Expression
+    // TODO: | Expression '&&' Expression
+    // TODO: | Expression '||' Expression
+    // TODO: | Expression '?' Expression ':' Expression
+    // TODO: | Expression ('=' | '|=' | '^=' | '&=' | '<<=' | '>>=' | '+=' | '-=' | '*=' | '/=' | '%=') Expression
+    // TODO: | PrimaryExpression
     PrimaryExpression(PrimaryExpression),
 }
 
@@ -30,8 +49,13 @@ pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
             let (exp, mem) = m;
             Expression::MemberAccess(Box::new(exp), mem)
         }),
+        map(parses_function_call, |f| {
+            let (expr, args) = f;
+            Expression::FunctionCall(Box::new(expr), args)
+        }),
+        delimited(tag("("), parse_expression, tag(")")),
         map(parse_primary_expression, |e| {
-            return Expression::PrimaryExpression(e);
+            Expression::PrimaryExpression(e)
         }),
     ))(i)
 }

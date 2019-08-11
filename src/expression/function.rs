@@ -4,11 +4,13 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, multispace0},
-    combinator::{map, opt},
+    combinator::{complete, map, map_res, opt},
     multi::separated_list,
-    sequence::{delimited, preceded, separated_pair, tuple},
-    IResult,
+    named,
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
+    take_until1, IResult,
 };
+use std::str::from_utf8;
 
 pub type NameValue = (String, Expression);
 
@@ -31,9 +33,23 @@ pub enum FunctionCallArguments {
 }
 
 pub fn parses_function_call(i: &[u8]) -> IResult<&[u8], (Expression, FunctionCallArguments)> {
-    tuple((
-        parse_expression,
-        delimited(tag("("), parse_function_call_arguments, tag(")")),
+    named!(t1, take_until1!("("));
+    complete(map_res(
+        tuple((
+            terminated(t1, multispace0),
+            delimited(tag("("), parse_function_call_arguments, tag(")")),
+        )),
+        |x| {
+            println!("yoloswag");
+            let (expr, args) = x;
+            let p_expr = parse_expression(expr);
+            if p_expr.is_err() {
+                return Err(p_expr.unwrap_err());
+            } else {
+                let (_, e) = p_expr.unwrap();
+                return Ok((e, args));
+            }
+        },
     ))(i)
 }
 
