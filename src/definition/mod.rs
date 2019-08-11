@@ -15,7 +15,7 @@ mod contract_type;
 #[derive(Debug, PartialEq, Clone)]
 pub struct ContractPart {}
 
-fn parse_contract_part(i: &[u8]) -> IResult<&[u8], Box<ContractPart>> {
+fn parse_contract_part(i: &[u8]) -> IResult<&[u8], ContractPart> {
     panic!("not implemented")
 }
 
@@ -23,10 +23,10 @@ fn parse_contract_part(i: &[u8]) -> IResult<&[u8], Box<ContractPart>> {
 pub struct Contract {
     pub contract_type: ContractType,
     pub identifier: String,
-    pub contract_part: Vec<Box<ContractPart>>,
+    pub contract_part: Vec<ContractPart>,
 }
 
-fn parse_contract(i: &[u8]) -> IResult<&[u8], Box<Contract>> {
+pub fn parse_contract(i: &[u8]) -> IResult<&[u8], Contract> {
     map(
         tuple((
             preceded(multispace1, parse_contract_type),
@@ -41,11 +41,11 @@ fn parse_contract(i: &[u8]) -> IResult<&[u8], Box<Contract>> {
         )),
         |x| {
             let (contract_type, identifier, contract_part) = x;
-            Box::new(Contract {
+            Contract {
                 contract_type,
                 identifier,
                 contract_part: contract_part,
-            })
+            }
         },
     )(i)
 }
