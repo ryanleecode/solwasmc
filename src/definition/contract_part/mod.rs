@@ -1,10 +1,12 @@
 use crate::{
     atom::parse_identifier,
+    definition::constructor::{parse as parse_constructor, Constructor},
     expression::{parse_expression, parse_type_name, Expression, Parameter, TypeName},
     state_mutability::StateMutability,
     visibility::Visibility,
 };
 use nom::{
+    branch::alt,
     character::complete::{char, multispace0, multispace1},
     combinator::map,
     sequence::{preceded, terminated, tuple},
@@ -19,7 +21,7 @@ pub struct StateVariableDeclaration {
     pub rhs: Expression,
 }
 
-pub fn parse_state_variable_declaration(i: &[u8]) -> IResult<&[u8], Box<StateVariableDeclaration>> {
+pub fn parse_state_variable_declaration(i: &[u8]) -> IResult<&[u8], StateVariableDeclaration> {
     map(
         tuple((
             preceded(multispace0, parse_type_name),
@@ -37,11 +39,11 @@ pub fn parse_state_variable_declaration(i: &[u8]) -> IResult<&[u8], Box<StateVar
         )),
         |d| {
             let (type_name, identifier, expr) = d;
-            Box::new(StateVariableDeclaration {
+            StateVariableDeclaration {
                 type_name,
                 identifier,
                 rhs: expr,
-            })
+            }
         },
     )(i)
 }
@@ -81,6 +83,7 @@ pub struct EnumDefinition {}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ContractPart {
+    ConstructorDefinition(Constructor),
     StateVariableDeclaration(StateVariableDeclaration),
     UsingForDeclaration(UsingForDeclaration),
     StructDefinition(StructDefinition),
@@ -89,6 +92,17 @@ pub enum ContractPart {
     FunctionDefinition(FunctionDefinition),
     EventDefinition(EventDefinition),
     EnumDefinition(EnumDefinition),
+}
+
+pub fn parse(i: &[u8]) -> IResult<&[u8], ContractPart> {
+    alt((
+        map(parse_constructor, |x| {
+            ContractPart::ConstructorDefinition(x)
+        }),
+        map(parse_state_variable_declaration, |x| {
+            ContractPart::StateVariableDeclaration(x)
+        }),
+    ))(i)
 }
 
 #[cfg(test)]
@@ -111,7 +125,7 @@ mod tests {
                 (from_utf8(remaining).unwrap(), declaration),
                 (
                     "",
-                    Box::new(StateVariableDeclaration {
+                    StateVariableDeclaration {
                         type_name: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
                         identifier: "a".to_string(),
                         rhs: Expression::MemberAccess(
@@ -120,7 +134,7 @@ mod tests {
                             )),
                             "c".to_string()
                         )
-                    })
+                    }
                 )
             )
         }

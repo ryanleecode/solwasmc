@@ -1,5 +1,5 @@
 use crate::atom::{keyword::parse_interface, parse_identifier};
-use crate::definition::contract_type::{parse as parse_contract_type, ContractType};
+use crate::definition::{contract_type::{parse as parse_contract_type, ContractType}, contract_part::{parse as parse_contract_part, ContractPart}};
 use nom::{
     character::complete::{char, multispace0, multispace1},
     combinator::map,
@@ -11,13 +11,6 @@ use nom::{
 mod constructor;
 mod contract_part;
 mod contract_type;
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct ContractPart {}
-
-fn parse_contract_part(i: &[u8]) -> IResult<&[u8], ContractPart> {
-    panic!("not implemented")
-}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Contract {
