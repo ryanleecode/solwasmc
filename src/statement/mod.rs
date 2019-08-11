@@ -1,6 +1,5 @@
 use crate::{
     atom::parse_identifier,
-    elementary_type_name::ElementaryTypeName,
     expression::{parse_expression, parse_type_name, Expression, TypeName},
     storage_location::{parse as parse_storage_location, StorageLocation},
 };
@@ -8,7 +7,7 @@ use nom::{
     branch::alt,
     character::complete::{char, multispace0, multispace1},
     combinator::{map, opt},
-    multi::many0,
+    multi::{many0, separated_list},
     sequence::{delimited, preceded, tuple},
     IResult,
 };
@@ -44,6 +43,32 @@ pub fn parse_variable_declaration(i: &[u8]) -> IResult<&[u8], VariableDeclaratio
 pub struct VariableDefinition {
     pub declarations: Vec<VariableDeclaration>,
     pub rhs: Expression,
+}
+
+pub fn parse_variable_definition(i: &[u8]) -> IResult<&[u8], VariableDefinition> {
+    map(
+        tuple((
+            alt((
+                map(parse_variable_declaration, |x| vec![x]),
+                delimited(
+                    preceded(multispace0, char('(')),
+                    preceded(
+                        multispace0,
+                        separated_list(char(','), parse_variable_declaration),
+                    ),
+                    preceded(multispace0, char(')')),
+                ),
+            )),
+            preceded(
+                preceded(multispace0, char('=')),
+                preceded(multispace0, parse_expression),
+            ),
+        )),
+        |x| {
+            let (declarations, rhs) = x;
+            VariableDefinition { declarations, rhs }
+        },
+    )(i)
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -82,6 +107,9 @@ pub fn parse_block(i: &[u8]) -> IResult<&[u8], Vec<Statement>> {
 mod tests {
     use super::*;
 
+    use crate::elementary_type_name::ElementaryTypeName;
+    use crate::expression::{Expression, PrimaryExpression};
+    use crate::literal::Boolean;
     use pretty_assertions::assert_eq;
     use std::str::from_utf8;
 
@@ -101,6 +129,40 @@ mod tests {
                         type_name: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
                         storage_location: Some(StorageLocation::Memory),
                         identifier: "mahmemory".to_string(),
+                    }
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_variable_definition() {
+        let input = b"    (bool     memory     a,     bool     memory    b   ) =    true";
+        let result = parse_variable_definition(input);
+        if result.is_err() {
+            result.expect("should parse variable definition");
+        } else {
+            let (remaining, decl) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), decl),
+                (
+                    "",
+                    VariableDefinition {
+                        declarations: vec![
+                            VariableDeclaration {
+                                type_name: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
+                                storage_location: Some(StorageLocation::Memory),
+                                identifier: "a".to_string(),
+                            },
+                            VariableDeclaration {
+                                type_name: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
+                                storage_location: Some(StorageLocation::Memory),
+                                identifier: "b".to_string(),
+                            }
+                        ],
+                        rhs: Expression::PrimaryExpression(PrimaryExpression::BooleanLiteral(
+                            Boolean::True
+                        ))
                     }
                 )
             )
