@@ -97,11 +97,11 @@ pub fn parse_statement(i: &[u8]) -> IResult<&[u8], Statement> {
             terminated(
                 alt((
                     map(parse_expression, |x| Statement::Expression(x)),
-                    map(parse_variable_declaration, |x| {
-                        Statement::VariableDeclaration(x)
-                    }),
                     map(parse_variable_definition, |x| {
                         Statement::VariableDefinition(x)
+                    }),
+                    map(parse_variable_declaration, |x| {
+                        Statement::VariableDeclaration(x)
                     }),
                 )),
                 preceded(multispace0, tag(";")),
@@ -111,11 +111,11 @@ pub fn parse_statement(i: &[u8]) -> IResult<&[u8], Statement> {
             map(parse_block, |x| Statement::Block(x)),
             terminated(
                 alt((
-                    map(parse_variable_declaration, |x| {
-                        Statement::VariableDeclaration(x)
-                    }),
                     map(parse_variable_definition, |x| {
                         Statement::VariableDefinition(x)
+                    }),
+                    map(parse_variable_declaration, |x| {
+                        Statement::VariableDeclaration(x)
                     }),
                 )),
                 preceded(multispace0, tag(";")),

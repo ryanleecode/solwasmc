@@ -8,6 +8,7 @@ use nom::{
     IResult,
 };
 
+mod constructor;
 mod contract_part;
 mod contract_type;
 

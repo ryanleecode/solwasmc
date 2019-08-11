@@ -5,7 +5,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{digit1, hex_digit1, multispace1},
-    combinator::{map,opt},
+    combinator::{map, opt},
     delimited as delimitedm, escaped_transform as escaped_transformm, is_not as is_notm,
     map as mapm, named,
     sequence::{preceded, tuple},
@@ -81,18 +81,18 @@ fn parse_string_literal(i: &[u8]) -> IResult<&[u8], Literal> {
 }
 
 fn parse_number(i: &[u8]) -> IResult<&[u8], Number> {
-    alt((parse_decimal_number, parse_hex_number))(i)
+    alt((parse_hex_number, parse_decimal_number))(i)
 }
 
 fn parse_number_literal(i: &[u8]) -> IResult<&[u8], NumberLiteral> {
-    tuple((parse_number, opt(preceded(multispace1,parse_number_unit))))(i)
+    tuple((parse_number, opt(preceded(multispace1, parse_number_unit))))(i)
 }
 
 pub fn parse(i: &[u8]) -> IResult<&[u8], Literal> {
     alt((
         parse_string_literal,
         map(parse_bool, |b| Literal::Boolean(b)),
-        map(parse_number_literal, |n| Literal::Number(n))
+        map(parse_number_literal, |n| Literal::Number(n)),
     ))(i)
 }
 
@@ -100,6 +100,7 @@ pub fn parse(i: &[u8]) -> IResult<&[u8], Literal> {
 mod tests {
     use super::*;
 
+    use pretty_assertions::assert_eq;
     #[test]
     fn parses_normal_decimal_number() {
         let input = b"323\n";
@@ -144,6 +145,24 @@ mod tests {
             assert_eq!(
                 (from_utf8(remaining).unwrap(), b),
                 ("  \n", Literal::String("hello\" world".to_string()))
+            )
+        }
+    }
+
+    #[test]
+    fn hex_number_takes_precedence_over_decimal() {
+        let input = b"0xFB88dE099e13c3ED21F80a7a1E49f8CAEcF10df6\n";
+        let result = parse_number(input);
+        if result.is_err() {
+            result.expect("should parse break");
+        } else {
+            let (remaining, b) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), b),
+                (
+                    "\n",
+                    Number::Hex("0xFB88dE099e13c3ED21F80a7a1E49f8CAEcF10df6".to_string())
+                )
             )
         }
     }

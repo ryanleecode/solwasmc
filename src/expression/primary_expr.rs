@@ -6,6 +6,7 @@ use nom::{
     combinator::{complete, map, map_res},
     IResult,
 };
+use std::str::from_utf8;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PrimaryExpression {

@@ -1,8 +1,7 @@
 use crate::atom::parse_identifier;
 use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName};
 use crate::expression::{
-    function::{parses_function_call, FunctionCallArguments},
-    primary_expr::parse as parse_primary_expression,
+    function::parses_function_call, primary_expr::parse as parse_primary_expression,
 };
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
@@ -18,7 +17,7 @@ use nom::{
 mod function;
 mod primary_expr;
 
-pub use crate::expression::primary_expr::PrimaryExpression;
+pub use crate::expression::{function::FunctionCallArguments, primary_expr::PrimaryExpression};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
@@ -111,9 +110,9 @@ pub fn parse_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Parameter {
-    typename: TypeName,
-    storage_location: Option<StorageLocation>,
-    identifier: Option<String>,
+    pub typename: TypeName,
+    pub storage_location: Option<StorageLocation>,
+    pub identifier: Option<String>,
 }
 
 pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Parameter> {
