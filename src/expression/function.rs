@@ -30,7 +30,7 @@ pub enum FunctionCallArguments {
     ExpressionList(Option<Vec<Expression>>),
 }
 
-fn parses_function_call(i: &[u8]) -> IResult<&[u8], (Expression, FunctionCallArguments)> {
+pub fn parses_function_call(i: &[u8]) -> IResult<&[u8], (Expression, FunctionCallArguments)> {
     tuple((
         parse_expression,
         delimited(tag("("), parse_function_call_arguments, tag(")")),
