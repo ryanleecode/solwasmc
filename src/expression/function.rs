@@ -1,18 +1,19 @@
 use crate::atom::parse_identifier;
-use crate::expression::{parse_expression, Expression};
+use crate::expression::{parse_expression, parse_expression_list, Expression};
 use nom::{
+    branch::alt,
     bytes::complete::tag,
     character::complete::{char, multispace0},
-    multi::separated_nonempty_list,
-    sequence::preceded,
-    sequence::separated_pair,
+    combinator::{map, opt},
+    multi::separated_list,
+    sequence::{delimited, preceded, separated_pair, tuple},
     IResult,
 };
 
 pub type NameValue = (String, Expression);
 
 fn parse_name_value_list(i: &[u8]) -> IResult<&[u8], Vec<NameValue>> {
-    separated_nonempty_list(char(','), preceded(multispace0, parse_name_value))(i)
+    separated_list(char(','), preceded(multispace0, parse_name_value))(i)
 }
 
 fn parse_name_value(i: &[u8]) -> IResult<&[u8], NameValue> {
@@ -21,6 +22,30 @@ fn parse_name_value(i: &[u8]) -> IResult<&[u8], NameValue> {
         preceded(multispace0, tag(":")),
         preceded(multispace0, parse_expression),
     )(i)
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum FunctionCallArguments {
+    NameValueList(Vec<NameValue>),
+    ExpressionList(Option<Vec<Expression>>),
+}
+
+fn parses_function_call(i: &[u8]) -> IResult<&[u8], (Expression, FunctionCallArguments)> {
+    tuple((
+        parse_expression,
+        delimited(tag("("), parse_function_call_arguments, tag(")")),
+    ))(i)
+}
+
+fn parse_function_call_arguments(i: &[u8]) -> IResult<&[u8], FunctionCallArguments> {
+    alt((
+        map(delimited(tag("{"), parse_name_value_list, tag("}")), |l| {
+            FunctionCallArguments::NameValueList(l)
+        }),
+        map(opt(parse_expression_list), |l| {
+            FunctionCallArguments::ExpressionList(l)
+        }),
+    ))(i)
 }
 
 #[cfg(test)]
@@ -53,6 +78,18 @@ mod tests {
                     )
                 )
             )
+        }
+    }
+
+    #[test]
+    fn parses_empty_name_value_list() {
+        let input = b"";
+        let result = parse_name_value_list(input);
+        if result.is_err() {
+            result.expect("should parse empty name value list");
+        } else {
+            let (remaining, b) = result.ok().unwrap();
+            assert_eq!((from_utf8(remaining).unwrap(), b), ("", vec![]))
         }
     }
 

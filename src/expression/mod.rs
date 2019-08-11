@@ -36,6 +36,10 @@ pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
     ))(i)
 }
 
+pub fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Expression>> {
+    separated_nonempty_list(char(','), preceded(multispace0, parse_expression))(i)
+}
+
 fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
     map_res(
         separated_pair(take_until("."), char('.'), parse_identifier),
