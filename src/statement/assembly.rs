@@ -1,13 +1,23 @@
 use crate::atom::parse_identifier;
 use nom::{
+    branch::alt,
     bytes::complete::tag,
     character::complete::{char, multispace0},
     combinator::map,
     multi::separated_nonempty_list,
     sequence::preceded,
-    branch::{alt},
     IResult,
 };
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum AssemblyStatement {
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct InlineAssemblyStatement {
+    pub identifier: Option<String>,
+    pub assembly_statements: Vec<AssemblyStatement>
+}
 
 fn parse_assembly_identifier_list(i: &[u8]) -> IResult<&[u8], Vec<String>> {
     separated_nonempty_list(char(','), preceded(multispace0, parse_identifier))(i)

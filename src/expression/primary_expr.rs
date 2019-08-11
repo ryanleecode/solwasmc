@@ -3,7 +3,7 @@ use crate::elementary_type_name::{parse as parse_elementary_type_name, Elementar
 use crate::literal::{parse as parse_literal, Boolean, Literal, NumberLiteral};
 use nom::{
     branch::alt,
-    combinator::{map, map_res},
+    combinator::{complete, map, map_res},
     IResult,
 };
 
@@ -26,9 +26,11 @@ pub fn parse(i: &[u8]) -> IResult<&[u8], PrimaryExpression> {
             Literal::Number(n) => Ok(PrimaryExpression::NumberLiteral(n)),
             _ => Err("not a primary expression"),
         }),
-        map(parse_elementary_type_name, |n| {
+        complete(map(parse_elementary_type_name, |n| {
             PrimaryExpression::ElementaryTypeNameExpression(n)
-        }),
-        map(parse_identifier, |id| PrimaryExpression::Identifier(id)),
+        })),
+        complete(map(parse_identifier, |id| {
+            PrimaryExpression::Identifier(id)
+        })),
     ))(i)
 }

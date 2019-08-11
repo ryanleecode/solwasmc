@@ -75,6 +75,13 @@ mod tests {
     }
 
     #[test]
+    fn parses_identifier3() {
+        let input = "a";
+        let (remaining, atom) = parse_identifier(input.as_bytes()).ok().unwrap();
+        assert_eq!((from_utf8(remaining).unwrap(), atom), ("", "a".to_string()))
+    }
+
+    #[test]
     fn parse_identifier_should_never_be_an_empty_str() {
         let input = "           ";
         let result = parse_identifier(input.as_bytes());

@@ -7,10 +7,14 @@ mod directive;
 mod elementary_type_name;
 mod expression;
 mod literal;
+#[allow(dead_code)]
+mod state_mutability;
 mod statement;
 #[allow(dead_code)]
 mod storage_location;
 mod token;
+#[allow(dead_code)]
+mod visibility;
 
 pub fn compile(assem_code: &str) -> &str {
     /*    let mut lexer = Token::lexer(assem_code);
