@@ -116,7 +116,7 @@ pub struct Parameter {
     identifier: Option<String>,
 }
 
-pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
+pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Parameter> {
     map(
         tuple((
             parse_type_name,
@@ -140,16 +140,16 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
         |t| {
             let (typename, params) = t;
             let (storage_location, identifier) = params;
-            Box::new(Parameter {
+            Parameter {
                 typename,
                 storage_location,
                 identifier,
-            })
+            }
         },
     )(i)
 }
 
-pub fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Box<Parameter>>> {
+pub fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Parameter>> {
     terminated(
         preceded(
             char('('),
@@ -198,11 +198,11 @@ mod tests {
             (from_utf8(remaining).unwrap(), param),
             (
                 "\n",
-                Box::new(Parameter {
+                Parameter {
                     typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
                     storage_location: Some(StorageLocation::Memory),
                     identifier: Some("isWorking".to_string()),
-                })
+                }
             )
         )
     }
@@ -215,11 +215,11 @@ mod tests {
             (from_utf8(remaining).unwrap(), param),
             (
                 "\n",
-                Box::new(Parameter {
+                Parameter {
                     typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
                     storage_location: None,
                     identifier: Some("isWorking".to_string()),
-                })
+                }
             )
         )
     }
@@ -236,11 +236,11 @@ mod tests {
                 (from_utf8(remaining).unwrap(), param),
                 (
                     "",
-                    Box::new(Parameter {
+                    Parameter {
                         typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
                         storage_location: None,
                         identifier: None,
-                    })
+                    }
                 )
             )
         }
@@ -270,11 +270,11 @@ mod tests {
                 (from_utf8(remaining).unwrap(), params),
                 (
                     "",
-                    vec![Box::new(Parameter {
+                    vec![Parameter {
                         typename: TypeName::ElementaryTypeName(ElementaryTypeName::Address),
                         storage_location: None,
                         identifier: None
-                    })]
+                    }]
                 )
             )
         }
@@ -293,16 +293,16 @@ mod tests {
                 (
                     "",
                     vec![
-                        Box::new(Parameter {
+                        Parameter {
                             typename: TypeName::ElementaryTypeName(ElementaryTypeName::Address),
                             storage_location: None,
                             identifier: Some("to".to_string()),
-                        }),
-                        Box::new(Parameter {
+                        },
+                        Parameter {
                             typename: TypeName::ElementaryTypeName(ElementaryTypeName::Uint),
                             storage_location: None,
                             identifier: Some("age".to_string()),
-                        })
+                        }
                     ]
                 )
             )
