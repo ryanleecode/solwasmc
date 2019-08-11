@@ -1,4 +1,5 @@
 use crate::atom::{keyword::parse_interface, parse_identifier};
+use crate::definition::contract_type::ContractType;
 use nom::{
     character::complete::{char, multispace0, multispace1},
     combinator::map,
@@ -6,11 +7,11 @@ use nom::{
     IResult,
 };
 
+mod contract_type;
+
 #[derive(Debug, PartialEq, Clone)]
-pub enum ContractType {
-    Contract,
-    Library,
-    Interface,
+pub struct Contract {
+    pub contract_type: ContractType,
 }
 
 fn parse_interface_expression(i: &[u8]) -> IResult<&[u8], ContractType> {
