@@ -8,6 +8,7 @@ use nom::{
     IResult,
 };
 
+mod contract_part;
 mod contract_type;
 
 #[derive(Debug, PartialEq, Clone)]

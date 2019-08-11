@@ -9,6 +9,16 @@ use nom::{
     IResult,
 };
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum AssemblyStatement {
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct InlineAssemblyStatement {
+    pub identifier: Option<String>,
+    pub assembly_statements: Vec<AssemblyStatement>
+}
+
 fn parse_assembly_identifier_list(i: &[u8]) -> IResult<&[u8], Vec<String>> {
     separated_nonempty_list(char(','), preceded(multispace0, parse_identifier))(i)
 }

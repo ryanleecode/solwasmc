@@ -1,8 +1,8 @@
-use crate::atom::{keyword::parse_interface, parse_identifier};
+use crate::atom::parse_identifier;
 use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName};
 use crate::expression::{
     function::{parses_function_call, FunctionCallArguments},
-    primary_expr::{parse as parse_primary_expression, PrimaryExpression},
+    primary_expr::parse as parse_primary_expression,
 };
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
@@ -17,6 +17,8 @@ use nom::{
 
 mod function;
 mod primary_expr;
+
+pub use crate::expression::primary_expr::PrimaryExpression;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
@@ -82,10 +84,10 @@ fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
 
 pub type ElementaryTypeNameExpression = ElementaryTypeName;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TypeName {
     ElementaryTypeName(ElementaryTypeName),
-    UserDefinedTypeName,
+    UserDefinedTypeName(Vec<String>),
     // TODO: Mapping
     // TODO: ArrayTypeName
     // TODO: FunctionTypeName
@@ -93,8 +95,8 @@ pub enum TypeName {
 }
 
 pub fn parse_user_defined_type_name(i: &[u8]) -> IResult<&[u8], TypeName> {
-    map(separated_nonempty_list(char('.'), parse_identifier), |_| {
-        TypeName::UserDefinedTypeName
+    map(separated_nonempty_list(char('.'), parse_identifier), |x| {
+        TypeName::UserDefinedTypeName(x)
     })(i)
 }
 
@@ -115,38 +117,36 @@ pub struct Parameter {
 }
 
 pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Box<Parameter>> {
-    flat_map(parse_type_name, |typename| {
-        alt((
-            complete(map(
-                tuple((
-                    preceded(multispace1, parse_storage_location),
-                    preceded(multispace1, parse_identifier),
+    map(
+        tuple((
+            parse_type_name,
+            alt((
+                complete(map(
+                    tuple((
+                        preceded(multispace1, parse_storage_location),
+                        preceded(multispace1, parse_identifier),
+                    )),
+                    |tup| {
+                        let (storage, id) = tup;
+                        (Some(storage), Some(id.to_string()))
+                    },
                 )),
-                move |tup| {
-                    let (storage, id) = tup;
-                    Box::new(Parameter {
-                        typename: typename,
-                        storage_location: Some(storage),
-                        identifier: Some(id.to_string()),
-                    })
-                },
+                complete(map(preceded(multispace1, parse_identifier), |id| {
+                    (None, Some(id.to_string()))
+                })),
+                map(multispace0, move |_| (None, None)),
             )),
-            complete(map(preceded(multispace1, parse_identifier), move |id| {
-                Box::new(Parameter {
-                    typename: typename,
-                    storage_location: None,
-                    identifier: Some(id.to_string()),
-                })
-            })),
-            map(multispace0, move |_| {
-                Box::new(Parameter {
-                    typename: typename,
-                    storage_location: None,
-                    identifier: None,
-                })
-            }),
-        ))
-    })(i)
+        )),
+        |t| {
+            let (typename, params) = t;
+            let (storage_location, identifier) = params;
+            Box::new(Parameter {
+                typename,
+                storage_location,
+                identifier,
+            })
+        },
+    )(i)
 }
 
 fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Box<Parameter>>> {
@@ -179,7 +179,14 @@ mod tests {
         let (remaining, typename) = parse_user_defined_type_name(input.as_bytes()).ok().unwrap();
         assert_eq!(
             (from_utf8(remaining).unwrap(), typename),
-            (" {", TypeName::UserDefinedTypeName)
+            (
+                " {",
+                TypeName::UserDefinedTypeName(vec![
+                    "OpenZepp".to_string(),
+                    "ERC20".to_string(),
+                    "ABC".to_string()
+                ])
+            )
         )
     }
 
@@ -319,6 +326,52 @@ mod tests {
                             "aaaa".to_string()
                         )),
                         "bbbb".to_string()
+                    )
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_member_access2() {
+        let input = "aa.b\n";
+        let result = parse_member_access(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, params) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), params),
+                (
+                    "\n",
+                    (
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "aa".to_string()
+                        )),
+                        "b".to_string()
+                    )
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_member_access3() {
+        let input = "a.bb\n";
+        let result = parse_member_access(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, params) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), params),
+                (
+                    "\n",
+                    (
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "a".to_string()
+                        )),
+                        "bb".to_string()
                     )
                 )
             )

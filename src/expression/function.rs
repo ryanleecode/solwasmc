@@ -40,7 +40,6 @@ pub fn parses_function_call(i: &[u8]) -> IResult<&[u8], (Expression, FunctionCal
             delimited(tag("("), parse_function_call_arguments, tag(")")),
         )),
         |x| {
-            println!("yoloswag");
             let (expr, args) = x;
             let p_expr = parse_expression(expr);
             if p_expr.is_err() {
