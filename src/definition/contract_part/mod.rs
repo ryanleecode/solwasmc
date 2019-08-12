@@ -1,14 +1,18 @@
 use crate::{
     atom::parse_identifier,
     definition::constructor::{parse as parse_constructor, Constructor},
-    expression::{parse_expression, parse_type_name, Expression, Parameter, TypeName},
+    expression::{
+        parse_expression, parse_parameter_list, parse_type_name, Expression, Parameter, TypeName,
+    },
     state_mutability::StateMutability,
-    visibility::Visibility,
+    statement::{parse_block, Statement},
+    visibility::{parse as parse_visibility, Visibility},
 };
 use nom::{
     branch::alt,
+    bytes::complete::tag,
     character::complete::{char, multispace0, multispace1},
-    combinator::map,
+    combinator::{map, opt},
     sequence::{preceded, terminated, tuple},
     IResult,
 };
@@ -66,11 +70,44 @@ pub struct ModifierInvocation {}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDefinition {
-    pub identifier: String,
-    pub visibility: Visibility,
+    pub identifier: Option<String>,
+    pub visibility: Option<Visibility>,
     pub state_mutability: Option<StateMutability>,
     pub parameter_list: Vec<Parameter>,
-    /*     pub block: Option<> */
+    pub returns: Vec<Parameter>,
+    pub block: Vec<Statement>,
+}
+
+fn parse_function_definition(i: &[u8]) -> IResult<&[u8], FunctionDefinition> {
+    map(
+        preceded(
+            multispace0,
+            preceded(
+                tag("function"),
+                tuple((
+                    opt(preceded(multispace1, parse_identifier)),
+                    opt(preceded(multispace1, parse_parameter_list)),
+                    opt(preceded(multispace1, parse_visibility)),
+                    opt(preceded(
+                        multispace1,
+                        preceded(tag("returns"), preceded(multispace1, parse_parameter_list)),
+                    )),
+                    alt((map(tag(";"), |_| Vec::new()), parse_block)),
+                )),
+            ),
+        ),
+        |x| {
+            let (identifier, parameter_list, visibility, returns, block) = x;
+            FunctionDefinition {
+                identifier,
+                parameter_list: parameter_list.unwrap_or(Vec::new()),
+                visibility,
+                state_mutability: None,
+                returns: returns.unwrap_or(Vec::new()),
+                block,
+            }
+        },
+    )(i)
 }
 
 // TODO: EventDefinition
@@ -101,6 +138,9 @@ pub fn parse(i: &[u8]) -> IResult<&[u8], ContractPart> {
         }),
         map(parse_state_variable_declaration, |x| {
             ContractPart::StateVariableDeclaration(x)
+        }),
+        map(parse_function_definition, |x| {
+            ContractPart::FunctionDefinition(x)
         }),
     ))(i)
 }
