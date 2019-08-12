@@ -1,6 +1,6 @@
 use crate::atom::parse_identifier;
 use crate::elementary_type_name::{
-    parse as parse_elementary_type_name, uint::UInt, ElementaryTypeName,
+    parse as parse_elementary_type_name, UInt, ElementaryTypeName,
 };
 use crate::expression::{
     function::parses_function_call, primary_expr::parse as parse_primary_expression,

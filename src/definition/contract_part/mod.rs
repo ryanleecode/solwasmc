@@ -154,7 +154,7 @@ mod tests {
     use super::*;
 
     use crate::{
-        elementary_type_name::{uint::UInt, ElementaryTypeName},
+        elementary_type_name::{UInt, ElementaryTypeName},
         expression::PrimaryExpression,
         visibility::Visibility,
     };
