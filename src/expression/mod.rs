@@ -21,12 +21,15 @@ mod primary_expr;
 
 pub use crate::expression::{function::FunctionCallArguments, primary_expr::PrimaryExpression};
 
+
+
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
     // TODO: PostFix(),
     // TODO: New(),
     // TODO: IndexAccess,
-    MemberAccess(Box<Expression>, String),
+    MemberAccess(Box<Expression>, Box<Expression>),
     FunctionCall(Box<Expression>, FunctionCallArguments),
     // TODO:   ('!' | '~' | 'delete' | '++' | '--' | '+' | '-') Expression
     // TODO: | Expression '**' Expression
@@ -50,7 +53,7 @@ pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
     alt((
         map(parse_member_access, |m| {
             let (exp, mem) = m;
-            Expression::MemberAccess(Box::new(exp), mem)
+            Expression::MemberAccess(Box::new(exp), Box::new(mem))
         }),
         map(parses_function_call, |f| {
             let (expr, args) = f;
@@ -67,9 +70,21 @@ pub fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Expression>> {
     separated_nonempty_list(char(','), preceded(multispace0, parse_expression))(i)
 }
 
-fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
+fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, Expression)> {
     map_res(
-        separated_pair(take_until("."), char('.'), parse_identifier),
+        separated_pair(
+            take_until("."),
+            char('.'),
+            alt((
+                map(parse_identifier, |x| {
+                    Expression::PrimaryExpression(PrimaryExpression::Identifier(x))
+                }),
+                map(parses_function_call, |x| {
+                    let (expr, args) = x;
+                    Expression::FunctionCall(Box::new(expr), args)
+                })
+            )),
+        ),
         |x| {
             let (expr, id) = x;
             let p_expr = parse_expression(expr);
@@ -360,7 +375,9 @@ mod tests {
                         Expression::PrimaryExpression(PrimaryExpression::Identifier(
                             "aaaa".to_string()
                         )),
-                        "bbbb".to_string()
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "bbbb".to_string()
+                        ))
                     )
                 )
             )
@@ -383,7 +400,9 @@ mod tests {
                         Expression::PrimaryExpression(PrimaryExpression::Identifier(
                             "aa".to_string()
                         )),
-                        "b".to_string()
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "b".to_string()
+                        ))
                     )
                 )
             )
@@ -406,10 +425,15 @@ mod tests {
                         Expression::PrimaryExpression(PrimaryExpression::Identifier(
                             "a".to_string()
                         )),
-                        "bb".to_string()
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "bb".to_string()
+                        ))
                     )
                 )
             )
         }
     }
+
+    #[test]
+    fn parses_fnc_call_with_member_access_fnc_call() {}
 }

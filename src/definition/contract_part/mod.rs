@@ -180,7 +180,9 @@ mod tests {
                             Box::new(Expression::PrimaryExpression(
                                 PrimaryExpression::Identifier("b".to_string())
                             )),
-                            "c".to_string()
+                            Box::new(Expression::PrimaryExpression(
+                                PrimaryExpression::Identifier("c".to_string())
+                            ))
                         )
                     }
                 )
