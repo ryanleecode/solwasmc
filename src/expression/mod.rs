@@ -162,7 +162,6 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Parameter> {
 }
 
 pub fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Parameter>> {
-    ("parse param {:#?}", from_utf8(i).ok().unwrap());
     terminated(
         preceded(
             char('('),
