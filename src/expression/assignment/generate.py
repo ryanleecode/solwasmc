@@ -4,12 +4,13 @@ def snake_to_upper_camel(s):
 
 
 print("// GENERATED: DO NOT EDIT")
-print("""use nom::{{
+print("""use nom::{
     named,
     tag,
     IResult,
-    combinator::{{map}}
-}};
+    branch::{alt},
+    combinator::{map}
+};
 """)
 with open('operators.txt') as f:
     lines = [line for line in f]
@@ -31,6 +32,15 @@ pub enum Assignment {""")
     map(semi, |_| Assignment::{snake_to_upper_camel(name)})(i)
 }}""")
         print("")
+    print(
+        "pub fn parse(i: &[u8]) -> IResult<&[u8], Assignment> {")
+    print("\talt((")
+    for line in lines:
+        name, token = line.rstrip().split(" ")
+        print(f"\t\tparse_{name.lower()},")
+    print("\t))(i)")
+    print("}")
+    print("")
     print("#[cfg(test)]")
     print(
         "mod tests {\n\tuse super::*;\n\tuse std::str::from_utf8;\n")
