@@ -6,7 +6,7 @@ use crate::{
 use nom::{
     bytes::complete::tag,
     character::complete::multispace0,
-    combinator::{map, opt},
+    combinator::{complete, map, opt},
     sequence::{preceded, tuple},
     IResult,
 };
@@ -21,7 +21,7 @@ pub struct Constructor {
 pub fn parse(i: &[u8]) -> IResult<&[u8], Constructor> {
     map(
         tuple((
-            preceded(multispace0, tag("constructor")),
+            preceded(multispace0, complete(tag("constructor"))),
             preceded(multispace0, parse_parameter_list),
             opt(preceded(multispace0, parse_visibility)),
             preceded(multispace0, parse_block),

@@ -12,7 +12,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, multispace0, multispace1},
-    combinator::{map, opt},
+    combinator::{complete, map, opt},
     sequence::{preceded, terminated, tuple},
     IResult,
 };
@@ -78,29 +78,33 @@ pub struct FunctionDefinition {
     pub block: Vec<Statement>,
 }
 
+use std::str::from_utf8;
 fn parse_function_definition(i: &[u8]) -> IResult<&[u8], FunctionDefinition> {
     map(
         preceded(
-            multispace0,
-            preceded(
-                tag("function"),
-                tuple((
-                    opt(preceded(multispace1, parse_identifier)),
-                    opt(preceded(multispace1, parse_parameter_list)),
-                    opt(preceded(multispace1, parse_visibility)),
-                    opt(preceded(
-                        multispace1,
-                        preceded(tag("returns"), preceded(multispace1, parse_parameter_list)),
-                    )),
-                    alt((map(tag(";"), |_| Vec::new()), parse_block)),
+            preceded(multispace0, complete(tag("function"))),
+            tuple((
+                opt(preceded(multispace1, parse_identifier)),
+                preceded(multispace0, parse_parameter_list),
+                opt(preceded(multispace0, parse_visibility)),
+                opt(preceded(
+                    multispace1,
+                    preceded(
+                        complete(tag("returns")),
+                        preceded(multispace1, parse_parameter_list),
+                    ),
                 )),
-            ),
+                alt((
+                    map(preceded(multispace0, char(';')), |_| Vec::new()),
+                    parse_block,
+                )),
+            )),
         ),
         |x| {
             let (identifier, parameter_list, visibility, returns, block) = x;
             FunctionDefinition {
                 identifier,
-                parameter_list: parameter_list.unwrap_or(Vec::new()),
+                parameter_list,
                 visibility,
                 state_mutability: None,
                 returns: returns.unwrap_or(Vec::new()),
@@ -149,7 +153,11 @@ pub fn parse(i: &[u8]) -> IResult<&[u8], ContractPart> {
 mod tests {
     use super::*;
 
-    use crate::{elementary_type_name::ElementaryTypeName, expression::PrimaryExpression};
+    use crate::{
+        elementary_type_name::{uint::UInt, ElementaryTypeName},
+        expression::PrimaryExpression,
+        visibility::Visibility,
+    };
     use pretty_assertions::assert_eq;
     use std::str::from_utf8;
 
@@ -174,6 +182,44 @@ mod tests {
                             )),
                             "c".to_string()
                         )
+                    }
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_function_declaration() {
+        let input = b"function transfer(address to, uint256 value) external;";
+        let result = parse_function_definition(input);
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, declaration) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), declaration),
+                (
+                    "",
+                    FunctionDefinition {
+                        identifier: Some("transfer".to_string()),
+                        visibility: Some(Visibility::External),
+                        state_mutability: None,
+                        parameter_list: vec![
+                            Parameter {
+                                typename: TypeName::ElementaryTypeName(ElementaryTypeName::Address),
+                                storage_location: None,
+                                identifier: Some("to".to_string())
+                            },
+                            Parameter {
+                                typename: TypeName::ElementaryTypeName(ElementaryTypeName::UInt(
+                                    UInt::Uint256
+                                )),
+                                storage_location: None,
+                                identifier: Some("value".to_string())
+                            }
+                        ],
+                        returns: vec![],
+                        block: vec![],
                     }
                 )
             )

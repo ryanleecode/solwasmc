@@ -1,9 +1,10 @@
+use crate::root::parse;
+use console_error_panic_hook;
 use wasm_bindgen::prelude::*;
 
 mod atom;
 mod definition;
 mod directive;
-#[allow(dead_code)]
 mod elementary_type_name;
 mod expression;
 mod literal;
@@ -16,23 +17,27 @@ mod token;
 #[allow(dead_code)]
 mod visibility;
 
-pub fn compile(assem_code: &str) -> &str {
-    /*    let mut lexer = Token::lexer(assem_code);
+mod root;
 
-    while lexer.token != Token::End {
-        if lexer.token == Token::Error {
-            println!("ERROR: {}", lexer.slice());
-            break;
-        }
-        println!("{}", lexer.slice());
-        lexer.advance();
-    }*/
-    return "";
+#[wasm_bindgen]
+pub fn compile(assem_code: &str) -> String {
+    console_error_panic_hook::set_once();
+    let compile_result = parse(assem_code.as_bytes());
+    if compile_result.is_err() {
+        // let err = compile_result.unwrap_err();
+        // TODO: Figure out how to get anything from this error
+        panic!("compile failed");
+    } else {
+        let (_, contracts) = compile_result.unwrap();
+        println!("{:#?}", contracts);
+
+        return "".to_string();
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::compile;
+    use super::*;
     use std::fs;
 
     use pretty_assertions::assert_eq;

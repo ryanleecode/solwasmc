@@ -56,7 +56,7 @@ pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
             let (expr, args) = f;
             Expression::FunctionCall(Box::new(expr), args)
         }),
-        delimited(tag("("), parse_expression, tag(")")),
+        delimited(char('('), parse_expression, char(')')),
         map(parse_primary_expression, |e| {
             Expression::PrimaryExpression(e)
         }),
