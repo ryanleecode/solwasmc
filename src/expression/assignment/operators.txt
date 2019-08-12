@@ -1,0 +1,11 @@
+assign =
+or_assign |=
+xor_assign ^= 
+and_assign &=
+left_shift_assign <<=
+right_shift_assign >>=
+add_assign += 
+sub_assign -=
+multi_assign *=
+div_assign /=
+mod_assign %=

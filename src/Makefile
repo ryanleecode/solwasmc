@@ -6,3 +6,4 @@ generate:
 	cd visibility && make generate
 	cd literal && make generate
 	cd definition && make generate
+	cd expression && make generate
