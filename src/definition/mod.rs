@@ -4,7 +4,7 @@ use crate::{
         contract_part::{parse as parse_contract_part, ContractPart, FunctionDefinition},
         contract_type::{parse as parse_contract_type, ContractType},
     },
-    elementary_type_name::{uint::UInt, ElementaryTypeName},
+    elementary_type_name::{UInt, ElementaryTypeName},
     expression::{Parameter, TypeName},
     visibility::Visibility,
 };

@@ -1,7 +1,5 @@
 use crate::atom::parse_identifier;
-use crate::elementary_type_name::{
-    parse as parse_elementary_type_name, uint::UInt, ElementaryTypeName,
-};
+use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName, UInt};
 use crate::expression::{
     function::parses_function_call, primary_expr::parse as parse_primary_expression,
 };
@@ -26,7 +24,7 @@ pub enum Expression {
     // TODO: PostFix(),
     // TODO: New(),
     // TODO: IndexAccess,
-    MemberAccess(Box<Expression>, String),
+    MemberAccess(Box<Expression>, Box<Expression>),
     FunctionCall(Box<Expression>, FunctionCallArguments),
     // TODO:   ('!' | '~' | 'delete' | '++' | '--' | '+' | '-') Expression
     // TODO: | Expression '**' Expression
@@ -50,7 +48,7 @@ pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
     alt((
         map(parse_member_access, |m| {
             let (exp, mem) = m;
-            Expression::MemberAccess(Box::new(exp), mem)
+            Expression::MemberAccess(Box::new(exp), Box::new(mem))
         }),
         map(parses_function_call, |f| {
             let (expr, args) = f;
@@ -67,9 +65,21 @@ pub fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Expression>> {
     separated_nonempty_list(char(','), preceded(multispace0, parse_expression))(i)
 }
 
-fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, String)> {
+fn parse_member_access(i: &[u8]) -> IResult<&[u8], (Expression, Expression)> {
     map_res(
-        separated_pair(take_until("."), char('.'), parse_identifier),
+        separated_pair(
+            take_until("."),
+            char('.'),
+            alt((
+                map(parses_function_call, |x| {
+                    let (expr, args) = x;
+                    Expression::FunctionCall(Box::new(expr), args)
+                }),
+                map(parse_identifier, |x| {
+                    Expression::PrimaryExpression(PrimaryExpression::Identifier(x))
+                }),
+            )),
+        ),
         |x| {
             let (expr, id) = x;
             let p_expr = parse_expression(expr);
@@ -173,6 +183,8 @@ mod tests {
     use super::*;
 
     use crate::elementary_type_name::ElementaryTypeName;
+    use crate::expression::function::FunctionCallArguments;
+    use crate::literal::Number;
     use pretty_assertions::assert_eq;
     use std::str::from_utf8;
 
@@ -360,7 +372,9 @@ mod tests {
                         Expression::PrimaryExpression(PrimaryExpression::Identifier(
                             "aaaa".to_string()
                         )),
-                        "bbbb".to_string()
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "bbbb".to_string()
+                        ))
                     )
                 )
             )
@@ -383,7 +397,9 @@ mod tests {
                         Expression::PrimaryExpression(PrimaryExpression::Identifier(
                             "aa".to_string()
                         )),
-                        "b".to_string()
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "b".to_string()
+                        ))
                     )
                 )
             )
@@ -406,7 +422,58 @@ mod tests {
                         Expression::PrimaryExpression(PrimaryExpression::Identifier(
                             "a".to_string()
                         )),
-                        "bb".to_string()
+                        Expression::PrimaryExpression(PrimaryExpression::Identifier(
+                            "bb".to_string()
+                        ))
+                    )
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn parses_fnc_call_with_member_access_fnc_call() {
+        let input = "GeneralERC20(0xf25186B5081Ff5cE73482AD761DB0eB0d25abfBF).transfer(0x821aEa9a577a9b44299B9c15c88cf3087F3b5544, 250)\n";
+        let result = parse_member_access(input.as_bytes());
+        if result.is_err() {
+            result.expect("error");
+        } else {
+            let (remaining, params) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), params),
+                (
+                    "\n",
+                    (
+                        Expression::FunctionCall(
+                            Box::new(Expression::PrimaryExpression(
+                                PrimaryExpression::Identifier("GeneralERC20".to_string())
+                            )),
+                            FunctionCallArguments::ExpressionList(Some(vec![
+                                Expression::PrimaryExpression(PrimaryExpression::NumberLiteral((
+                                    Number::Hex(
+                                        "0xf25186B5081Ff5cE73482AD761DB0eB0d25abfBF".to_string()
+                                    ),
+                                    None
+                                )))
+                            ]))
+                        ),
+                        Expression::FunctionCall(
+                            Box::new(Expression::PrimaryExpression(
+                                PrimaryExpression::Identifier("transfer".to_string())
+                            )),
+                            FunctionCallArguments::ExpressionList(Some(vec![
+                                Expression::PrimaryExpression(PrimaryExpression::NumberLiteral((
+                                    Number::Hex(
+                                        "0x821aEa9a577a9b44299B9c15c88cf3087F3b5544".to_string()
+                                    ),
+                                    None
+                                ))),
+                                Expression::PrimaryExpression(PrimaryExpression::NumberLiteral((
+                                    Number::Decimal("250".to_string()),
+                                    None
+                                )))
+                            ]))
+                        ),
                     )
                 )
             )

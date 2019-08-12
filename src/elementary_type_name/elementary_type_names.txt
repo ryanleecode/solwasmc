@@ -1,8 +1,0 @@
-address
-bool
-string
-int
-uint
-byte
-fixed
-ufixed

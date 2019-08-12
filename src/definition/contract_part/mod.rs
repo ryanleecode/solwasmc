@@ -154,7 +154,7 @@ mod tests {
     use super::*;
 
     use crate::{
-        elementary_type_name::{uint::UInt, ElementaryTypeName},
+        elementary_type_name::{UInt, ElementaryTypeName},
         expression::PrimaryExpression,
         visibility::Visibility,
     };
@@ -180,7 +180,9 @@ mod tests {
                             Box::new(Expression::PrimaryExpression(
                                 PrimaryExpression::Identifier("b".to_string())
                             )),
-                            "c".to_string()
+                            Box::new(Expression::PrimaryExpression(
+                                PrimaryExpression::Identifier("c".to_string())
+                            ))
                         )
                     }
                 )
