@@ -13,33 +13,42 @@ print("""use nom::{
     IResult,
 };
 """)
-with open('elementary_type_names.txt') as f:
+with open('uints.txt') as f:
     lines = [line.rstrip() for line in f]
     for line in lines:
         print(f"const {line.upper()}: &str = r#\"{line}\"#;")
     print("")
     print("""#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum ElementaryTypeName {""")
+pub enum UInt {""")
     for line in lines:
         print(f"\t{snake_to_upper_camel(line)},")
     print("}")
     print("")
     for line in lines:
 
-        print(f"""fn parse_{line.lower()}(i: &[u8]) -> IResult<&[u8], ElementaryTypeName> {{
+        print(f"""fn parse_{line.lower()}(i: &[u8]) -> IResult<&[u8], UInt> {{
     map(
         tuple((
             peek(terminated(tag({line.upper()}), one_of(" \\n\\r)"))),
             tag({line.upper()}),
         )),
-        |_| ElementaryTypeName::{snake_to_upper_camel(line)},
+        |_| UInt::{snake_to_upper_camel(line)},
     )(i)
 }}""")
     print(
-        "pub fn parse(i: &[u8]) -> IResult<&[u8], ElementaryTypeName> {")
+        "pub fn parse(i: &[u8]) -> IResult<&[u8], UInt> {")
     print("\talt((")
+    count = 0
+    rounds = 0
     for line in lines:
+        if count == 20:
+            print("\talt((")
+            count = 0
+            rounds += 1
         print(f"\t\tparse_{line.lower()},")
+        count += 1
+    for i in range(rounds):
+        print("\t))")
     print("\t))(i)")
     print("}")
 
@@ -54,6 +63,6 @@ pub enum ElementaryTypeName {""")
 \t    let (remaining, name) = parse_{line.lower()}(input.as_bytes()).ok().unwrap();
 \t    assert_eq!(
 \t        (from_utf8(remaining).unwrap(), name),
-\t        (" a", ElementaryTypeName::{snake_to_upper_camel(line)}))
+\t        (" a", UInt::{snake_to_upper_camel(line)}))
 \t}}""")
 print("}")

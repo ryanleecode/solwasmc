@@ -1,5 +1,7 @@
 use crate::atom::parse_identifier;
-use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName};
+use crate::elementary_type_name::{
+    parse as parse_elementary_type_name, uint::UInt, ElementaryTypeName,
+};
 use crate::expression::{
     function::parses_function_call, primary_expr::parse as parse_primary_expression,
 };
@@ -115,6 +117,7 @@ pub struct Parameter {
     pub identifier: Option<String>,
 }
 
+use std::str::from_utf8;
 pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Parameter> {
     map(
         tuple((
@@ -149,6 +152,7 @@ pub fn parse_parameter(i: &[u8]) -> IResult<&[u8], Parameter> {
 }
 
 pub fn parse_parameter_list(i: &[u8]) -> IResult<&[u8], Vec<Parameter>> {
+    ("parse param {:#?}", from_utf8(i).ok().unwrap());
     terminated(
         preceded(
             char('('),
@@ -190,6 +194,19 @@ mod tests {
     }
 
     #[test]
+    fn parses_user_defined_type_name_with_no_periods() {
+        let input = "keccak";
+        let (remaining, typename) = parse_user_defined_type_name(input.as_bytes()).ok().unwrap();
+        assert_eq!(
+            (from_utf8(remaining).unwrap(), typename),
+            (
+                "",
+                TypeName::UserDefinedTypeName(vec!["keccak".to_string(),])
+            )
+        )
+    }
+
+    #[test]
     fn parses_fully_qualified_parameter() {
         let input = "bool     memory     isWorking\n";
         let (remaining, param) = parse_parameter(input.as_bytes()).ok().unwrap();
@@ -218,6 +235,23 @@ mod tests {
                     typename: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
                     storage_location: None,
                     identifier: Some("isWorking".to_string()),
+                }
+            )
+        )
+    }
+
+    #[test]
+    fn parse_parameter_tolerate_uint256() {
+        let input = "uint256 value";
+        let (remaining, param) = parse_parameter(input.as_bytes()).ok().unwrap();
+        assert_eq!(
+            (from_utf8(remaining).unwrap(), param),
+            (
+                "",
+                Parameter {
+                    typename: TypeName::ElementaryTypeName(ElementaryTypeName::UInt(UInt::Uint256)),
+                    storage_location: None,
+                    identifier: Some("value".to_string()),
                 }
             )
         )
@@ -298,7 +332,9 @@ mod tests {
                             identifier: Some("to".to_string()),
                         },
                         Parameter {
-                            typename: TypeName::ElementaryTypeName(ElementaryTypeName::Uint),
+                            typename: TypeName::ElementaryTypeName(ElementaryTypeName::UInt(
+                                UInt::Uint
+                            )),
                             storage_location: None,
                             identifier: Some("age".to_string()),
                         }
