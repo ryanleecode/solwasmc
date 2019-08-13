@@ -8,6 +8,7 @@ mod directive;
 mod elementary_type_name;
 mod expression;
 mod literal;
+mod root;
 #[allow(dead_code)]
 mod state_mutability;
 mod statement;
@@ -17,7 +18,7 @@ mod token;
 #[allow(dead_code)]
 mod visibility;
 
-mod root;
+mod op_codes;
 
 #[wasm_bindgen]
 pub fn compile(assem_code: &str) -> String {
@@ -28,10 +29,14 @@ pub fn compile(assem_code: &str) -> String {
         // TODO: Figure out how to get anything from this error
         panic!("compile failed");
     } else {
-        let (_, contracts) = compile_result.unwrap();
-        println!("{:#?}", contracts);
+        let (_, root) = compile_result.ok().unwrap();
 
-        return "".to_string();
+        let mut bytecode = String::new();
+        for code in root.op_codes() {
+            let hex = format!("{:02x}", code);
+            bytecode.push_str(&hex);
+        }
+        return bytecode;
     }
 }
 

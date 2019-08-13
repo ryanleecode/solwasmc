@@ -7,3 +7,4 @@ generate:
 	cd literal && make generate
 	cd definition && make generate
 	cd expression && make generate
+	cd op_codes && make generate

@@ -6,6 +6,7 @@ use crate::{
     },
     elementary_type_name::{ElementaryTypeName, UInt},
     expression::{Parameter, TypeName},
+    op_codes::OpCode,
     visibility::Visibility,
 };
 use nom::{
@@ -21,6 +22,10 @@ mod constructor;
 mod contract_part;
 mod contract_type;
 
+trait OpCodes {
+    fn op_codes() -> Vec<OpCode>;
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Contract {
     pub contract_type: ContractType,
@@ -28,29 +33,56 @@ pub struct Contract {
     pub contract_part: Vec<ContractPart>,
 }
 
+impl Contract {
+    pub fn op_codes(self) -> Vec<u32> {
+        if self.contract_type == ContractType::Contract {
+            let mut codes = vec![
+                OpCode::PUSH1 as u32,
+                0x80,
+                OpCode::PUSH1 as u32,
+                0x40,
+                OpCode::MSTORE as u32,
+            ];
+
+            // TODO: Maybe dynamic dispatch?
+            for part in self.contract_part {
+                match part {
+                    ContractPart::ConstructorDefinition(ctor) => {
+                        codes.extend(ctor.op_codes());
+                    }
+                    _ => {}
+                }
+            }
+
+            return codes;
+        }
+        return vec![];
+    }
+}
+
 use std::str::from_utf8;
 pub fn parse_contract(i: &[u8]) -> IResult<&[u8], Contract> {
-        complete(map(
-            tuple((
-                parse_contract_type,
-                preceded(multispace1, parse_identifier),
-                terminated(
-                    preceded(
-                        multispace0,
-                        preceded(char('{'), many0(preceded(multispace0, parse_contract_part))),
-                    ),
-                    preceded(multispace0, char('}')),
+    complete(map(
+        tuple((
+            parse_contract_type,
+            preceded(multispace1, parse_identifier),
+            terminated(
+                preceded(
+                    multispace0,
+                    preceded(char('{'), many0(preceded(multispace0, parse_contract_part))),
                 ),
-            )),
-            |x| {
-                let (contract_type, identifier, contract_part) = x;
-                Contract {
-                    contract_type,
-                    identifier,
-                    contract_part: contract_part,
-                }
-            },
-        ))(i)
+                preceded(multispace0, char('}')),
+            ),
+        )),
+        |x| {
+            let (contract_type, identifier, contract_part) = x;
+            Contract {
+                contract_type,
+                identifier,
+                contract_part: contract_part,
+            }
+        },
+    ))(i)
 }
 
 #[cfg(test)]
