@@ -22,6 +22,10 @@ mod constructor;
 mod contract_part;
 mod contract_type;
 
+trait OpCodes {
+    fn op_codes() -> Vec<OpCode>;
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Contract {
     pub contract_type: ContractType,
@@ -32,24 +36,25 @@ pub struct Contract {
 impl Contract {
     pub fn op_codes(self) -> Vec<u32> {
         if self.contract_type == ContractType::Contract {
-            return vec![
+            let mut codes = vec![
                 OpCode::PUSH1 as u32,
                 0x80,
                 OpCode::PUSH1 as u32,
                 0x40,
                 OpCode::MSTORE as u32,
-                OpCode::CALLVALUE as u32,
-                OpCode::DUP1 as u32,
-                OpCode::ISZERO as u32,
-                OpCode::PUSH2 as u32,
-                0x00,
-                0x10,
-                OpCode::JUMPI as u32,
-                OpCode::PUSH1 as u32,
-                0x00,
-                OpCode::DUP1 as u32,
-                OpCode::REVERT as u32,
             ];
+
+            // TODO: Maybe dynamic dispatch?
+            for part in self.contract_part {
+                match part {
+                    ContractPart::ConstructorDefinition(ctor) => {
+                        codes.extend(ctor.op_codes());
+                    }
+                    _ => {}
+                }
+            }
+
+            return codes;
         }
         return vec![];
     }
