@@ -3,12 +3,15 @@ use crate::expression::{parse_expression, parse_expression_list, Expression};
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, multispace0},
+    character::{
+        complete::{char, multispace0},
+        is_alphanumeric,
+    },
     combinator::{complete, map, map_res, opt},
     multi::separated_list,
     named,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
-    take_until1, IResult,
+    take_until1, take_while, IResult,
 };
 use std::str::from_utf8;
 
@@ -34,7 +37,7 @@ pub enum FunctionCallArguments {
 }
 
 pub fn parses_function_call(i: &[u8]) -> IResult<&[u8], (Expression, FunctionCallArguments)> {
-    named!(t1, take_until1!("("));
+    named!(t1, take_while!(is_alphanumeric));
     complete(map_res(
         tuple((
             terminated(t1, multispace0),

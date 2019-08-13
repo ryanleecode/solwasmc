@@ -221,6 +221,33 @@ mod tests {
     }
 
     #[test]
+    fn parses_variable_definition2() {
+        let input = b"bool memory  a = true";
+        let result = parse_variable_definition(input);
+        if result.is_err() {
+            result.expect("should parse variable definition");
+        } else {
+            let (remaining, decl) = result.ok().unwrap();
+            assert_eq!(
+                (from_utf8(remaining).unwrap(), decl),
+                (
+                    "",
+                    VariableDefinition {
+                        declarations: vec![VariableDeclaration {
+                            type_name: TypeName::ElementaryTypeName(ElementaryTypeName::Bool),
+                            storage_location: Some(StorageLocation::Memory),
+                            identifier: "a".to_string(),
+                        },],
+                        rhs: Expression::PrimaryExpression(PrimaryExpression::BooleanLiteral(
+                            Boolean::True
+                        ))
+                    }
+                )
+            )
+        }
+    }
+
+    #[test]
     fn parses_block() {
         let input = b"{(bool     memory     a,     bool     memory    b   ) =    true;}";
         let result = parse_block(input);
@@ -275,4 +302,5 @@ mod tests {
             )
         }
     }
+
 }
