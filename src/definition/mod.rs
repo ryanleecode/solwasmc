@@ -4,13 +4,14 @@ use crate::{
         contract_part::{parse as parse_contract_part, ContractPart, FunctionDefinition},
         contract_type::{parse as parse_contract_type, ContractType},
     },
-    elementary_type_name::{UInt, ElementaryTypeName},
+    elementary_type_name::{ElementaryTypeName, UInt},
     expression::{Parameter, TypeName},
     visibility::Visibility,
 };
 use nom::{
     character::complete::{char, multispace0, multispace1},
     combinator::{complete, map},
+    dbg_dmp,
     multi::many0,
     sequence::{delimited, preceded, terminated, tuple},
     IResult,
@@ -29,27 +30,27 @@ pub struct Contract {
 
 use std::str::from_utf8;
 pub fn parse_contract(i: &[u8]) -> IResult<&[u8], Contract> {
-    complete(map(
-        tuple((
-            parse_contract_type,
-            preceded(multispace1, parse_identifier),
-            terminated(
-                preceded(
-                    multispace0,
-                    preceded(char('{'), many0(preceded(multispace0, parse_contract_part))),
+        complete(map(
+            tuple((
+                parse_contract_type,
+                preceded(multispace1, parse_identifier),
+                terminated(
+                    preceded(
+                        multispace0,
+                        preceded(char('{'), many0(preceded(multispace0, parse_contract_part))),
+                    ),
+                    preceded(multispace0, char('}')),
                 ),
-                preceded(multispace0, char('}')),
-            ),
-        )),
-        |x| {
-            let (contract_type, identifier, contract_part) = x;
-            Contract {
-                contract_type,
-                identifier,
-                contract_part: contract_part,
-            }
-        },
-    ))(i)
+            )),
+            |x| {
+                let (contract_type, identifier, contract_part) = x;
+                Contract {
+                    contract_type,
+                    identifier,
+                    contract_part: contract_part,
+                }
+            },
+        ))(i)
 }
 
 #[cfg(test)]

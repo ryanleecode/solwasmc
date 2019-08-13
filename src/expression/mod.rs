@@ -1,19 +1,23 @@
 use crate::atom::parse_identifier;
 use crate::elementary_type_name::{parse as parse_elementary_type_name, ElementaryTypeName, UInt};
 use crate::expression::{
-    function::parses_function_call, primary_expr::parse as parse_primary_expression,
+    assignment::{parse as parse_assignment_operator, Assignment},
+    function::parses_function_call,
+    primary_expr::parse as parse_primary_expression,
 };
 use crate::storage_location::{parse as parse_storage_location, StorageLocation};
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_until},
+    bytes::complete::{tag, take_till1, take_until},
     character::complete::{char, multispace0, multispace1},
-    combinator::{complete, flat_map, map, map_res},
+    combinator::{complete, flat_map, map, map_res, peek},
+    multi::many1,
     multi::{separated_list, separated_nonempty_list},
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
+mod assignment;
 mod function;
 mod primary_expr;
 
@@ -39,8 +43,8 @@ pub enum Expression {
     // TODO: | Expression '&&' Expression
     // TODO: | Expression '||' Expression
     // TODO: | Expression '?' Expression ':' Expression
+    Assignment(Box<Expression>, Assignment, Box<Expression>),
     // TODO: | Expression ('=' | '|=' | '^=' | '&=' | '<<=' | '>>=' | '+=' | '-=' | '*=' | '/=' | '%=') Expression
-    // TODO: | PrimaryExpression
     PrimaryExpression(PrimaryExpression),
 }
 
@@ -55,10 +59,45 @@ pub fn parse_expression(i: &[u8]) -> IResult<&[u8], Expression> {
             Expression::FunctionCall(Box::new(expr), args)
         }),
         delimited(char('('), parse_expression, char(')')),
+        map(parse_assignment_expression, |x| {
+            let (expr1, op, expr2) = x;
+            Expression::Assignment(expr1, op, expr2)
+        }),
         map(parse_primary_expression, |e| {
             Expression::PrimaryExpression(e)
         }),
     ))(i)
+}
+
+pub fn parse_expr_without_assignment(i: &[u8]) -> IResult<&[u8], Expression> {
+    alt((
+        map(parse_member_access, |m| {
+            let (exp, mem) = m;
+            Expression::MemberAccess(Box::new(exp), Box::new(mem))
+        }),
+        map(parses_function_call, |f| {
+            let (expr, args) = f;
+            Expression::FunctionCall(Box::new(expr), args)
+        }),
+        delimited(char('('), parse_expression, char(')')),
+        map(parse_primary_expression, |e| {
+            Expression::PrimaryExpression(e)
+        }),
+    ))(i)
+}
+
+fn parse_assignment_expression(
+    i: &[u8],
+) -> IResult<&[u8], (Box<Expression>, Assignment, Box<Expression>)> {
+    complete(tuple((
+        map(preceded(multispace0, parse_expr_without_assignment), |x| {
+            Box::new(x)
+        }),
+        preceded(multispace0, parse_assignment_operator),
+        map(preceded(multispace0, parse_expr_without_assignment), |x| {
+            Box::new(x)
+        }),
+    )))(i)
 }
 
 pub fn parse_expression_list(i: &[u8]) -> IResult<&[u8], Vec<Expression>> {

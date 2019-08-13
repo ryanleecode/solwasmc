@@ -1,12 +1,13 @@
 use crate::{
-    expression::{parse_parameter_list, Parameter},
-    statement::{parse_block, Statement},
+    expression::{parse_parameter_list, Parameter, TypeName},
+    statement::{parse_block, Statement, VariableDeclaration, VariableDefinition},
     visibility::{parse as parse_visibility, Visibility},
 };
 use nom::{
     bytes::complete::tag,
     character::complete::multispace0,
     combinator::{complete, map, opt},
+    dbg_dmp,
     sequence::{preceded, tuple},
     IResult,
 };
@@ -18,6 +19,7 @@ pub struct Constructor {
     pub statements: Vec<Statement>,
 }
 
+use std::str::from_utf8;
 pub fn parse(i: &[u8]) -> IResult<&[u8], Constructor> {
     map(
         tuple((
@@ -65,7 +67,42 @@ mod tests {
                             identifier: Some("lol".to_string())
                         }],
                         visibility: Some(Visibility::Public),
-                        statements: vec![Statement::Expression(Expression::FunctionCall(
+                        statements: vec![Statement::VariableDefinition(VariableDefinition {
+                            declarations: vec![VariableDeclaration {
+                                type_name: TypeName::ElementaryTypeName(
+                                    ElementaryTypeName::Address
+                                ),
+                                storage_location: None,
+                                identifier: "to".to_string(),
+                            },],
+                            rhs: Expression::FunctionCall(
+                                Box::new(Expression::PrimaryExpression(
+                                    PrimaryExpression::ElementaryTypeNameExpression(
+                                        ElementaryTypeName::Address
+                                    )
+                                )),
+                                FunctionCallArguments::ExpressionList(Some(vec![
+                                    Expression::PrimaryExpression(
+                                        PrimaryExpression::NumberLiteral((
+                                            Number::Hex(
+                                                "0xFB88dE099e13c3ED21F80a7a1E49f8CAEcF10df6"
+                                                    .to_string()
+                                            ),
+                                            None
+                                        ))
+                                    )
+                                ]))
+                            )
+                        })],
+                    }
+                )
+            )
+        }
+    }
+}
+
+/*
+Statement::Expression(Expression::FunctionCall(
                             Box::new(Expression::PrimaryExpression(
                                 PrimaryExpression::ElementaryTypeNameExpression(
                                     ElementaryTypeName::Address
@@ -79,10 +116,4 @@ mod tests {
                                     None
                                 )))
                             ]))
-                        ))],
-                    }
-                )
-            )
-        }
-    }
-}
+                        )) */
