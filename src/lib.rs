@@ -33,7 +33,7 @@ pub fn compile(assem_code: &str) -> String {
 
         let mut bytecode = String::new();
         for code in root.op_codes() {
-            let hex = format!("{:x}", code);
+            let hex = format!("{:02x}", code);
             bytecode.push_str(&hex);
         }
         return bytecode;

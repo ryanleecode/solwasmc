@@ -1,4 +1,5 @@
 use crate::{
+    op_codes::{OpCode},
     expression::{parse_parameter_list, Parameter, TypeName},
     statement::{parse_block, Statement, VariableDeclaration, VariableDefinition},
     visibility::{parse as parse_visibility, Visibility},
@@ -17,6 +18,25 @@ pub struct Constructor {
     pub parameter_list: Vec<Parameter>,
     pub visibility: Option<Visibility>,
     pub statements: Vec<Statement>,
+}
+
+impl Constructor {
+    pub fn op_codes(self) -> Vec<u32> {
+        // TODO: Don't return this if its payable
+        let non_payable_guard = vec![OpCode::CALLVALUE as u32,
+                OpCode::DUP1 as u32,
+                OpCode::ISZERO as u32,
+                OpCode::PUSH2 as u32,
+                0x00,
+                0x10,
+                OpCode::JUMPI as u32,
+                OpCode::PUSH1 as u32,
+                0x00,
+                OpCode::DUP1 as u32,
+                OpCode::REVERT as u32,];
+
+        return non_payable_guard;
+    }
 }
 
 use std::str::from_utf8;
