@@ -8,6 +8,7 @@ mod directive;
 mod elementary_type_name;
 mod expression;
 mod literal;
+mod root;
 #[allow(dead_code)]
 mod state_mutability;
 mod statement;
@@ -17,7 +18,7 @@ mod token;
 #[allow(dead_code)]
 mod visibility;
 
-mod root;
+mod op_codes;
 
 #[wasm_bindgen]
 pub fn compile(assem_code: &str) -> String {
