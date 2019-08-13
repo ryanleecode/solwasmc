@@ -6,6 +6,7 @@ use crate::{
     },
     elementary_type_name::{ElementaryTypeName, UInt},
     expression::{Parameter, TypeName},
+    op_codes::OpCode,
     visibility::Visibility,
 };
 use nom::{
@@ -28,29 +29,38 @@ pub struct Contract {
     pub contract_part: Vec<ContractPart>,
 }
 
+impl Contract {
+    pub fn op_codes(self) -> Vec<u32> {
+        if (self.contract_type == ContractType::Contract) {
+            return vec![OpCode::PUSH1 as u32, 0x80, OpCode::PUSH1 as u32, 0x40]
+        }
+        return vec![];
+    }
+}
+
 use std::str::from_utf8;
 pub fn parse_contract(i: &[u8]) -> IResult<&[u8], Contract> {
-        complete(map(
-            tuple((
-                parse_contract_type,
-                preceded(multispace1, parse_identifier),
-                terminated(
-                    preceded(
-                        multispace0,
-                        preceded(char('{'), many0(preceded(multispace0, parse_contract_part))),
-                    ),
-                    preceded(multispace0, char('}')),
+    complete(map(
+        tuple((
+            parse_contract_type,
+            preceded(multispace1, parse_identifier),
+            terminated(
+                preceded(
+                    multispace0,
+                    preceded(char('{'), many0(preceded(multispace0, parse_contract_part))),
                 ),
-            )),
-            |x| {
-                let (contract_type, identifier, contract_part) = x;
-                Contract {
-                    contract_type,
-                    identifier,
-                    contract_part: contract_part,
-                }
-            },
-        ))(i)
+                preceded(multispace0, char('}')),
+            ),
+        )),
+        |x| {
+            let (contract_type, identifier, contract_part) = x;
+            Contract {
+                contract_type,
+                identifier,
+                contract_part: contract_part,
+            }
+        },
+    ))(i)
 }
 
 #[cfg(test)]

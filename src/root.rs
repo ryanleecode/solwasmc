@@ -5,8 +5,8 @@ use crate::{
 };
 use nom::{
     character::complete::multispace0,
+    combinator::map,
     multi::many0,
-     combinator::{map},
     sequence::{preceded, tuple},
     IResult,
 };
@@ -18,17 +18,28 @@ pub struct Root {
 
 impl Root {
     pub fn op_codes(self) -> Vec<u32> {
-        vec![OpCode::PUSH1 as u32, 0x80, OpCode::PUSH1 as u32, 0x40]
+        let mut codes = Vec::<u32>::new();
+        for contract in self.contracts {
+            for code in contract.op_codes() {
+                codes.push(code);
+            }
+        }
+        codes
     }
 }
 
 pub fn parse(i: &[u8]) -> IResult<&[u8], Root> {
-        map(tuple((
+    map(
+        tuple((
             parse_pragma_directive,
             many0(preceded(multispace0, parse_contract)),
         )),
- |x| {
-        let (pragma_directive, contracts) = x;
-        Root{pragma_directive, contracts}
-    })(i)
-} 
+        |x| {
+            let (pragma_directive, contracts) = x;
+            Root {
+                pragma_directive,
+                contracts,
+            }
+        },
+    )(i)
+}
