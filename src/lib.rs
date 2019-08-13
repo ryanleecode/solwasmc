@@ -29,10 +29,14 @@ pub fn compile(assem_code: &str) -> String {
         // TODO: Figure out how to get anything from this error
         panic!("compile failed");
     } else {
-        let (_, contracts) = compile_result.unwrap();
-        println!("{:#?}", contracts);
+        let (_, root) = compile_result.ok().unwrap();
 
-        return "".to_string();
+        let mut bytecode = String::new();
+        for code in root.op_codes() {
+            let hex = format!("{:x}", code);
+            bytecode.push_str(&hex);
+        }
+        return bytecode;
     }
 }
 
