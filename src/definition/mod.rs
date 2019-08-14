@@ -46,12 +46,7 @@ impl Contract {
 
             // TODO: Maybe dynamic dispatch?
             for part in self.contract_part {
-                match part {
-                    ContractPart::ConstructorDefinition(ctor) => {
-                        codes.extend(ctor.op_codes());
-                    }
-                    _ => {}
-                }
+                codes.extend(part.op_codes());
             }
 
             return codes;

@@ -9,11 +9,11 @@ use crate::{
     visibility::{parse as parse_visibility, Visibility},
 };
 use nom::{
-    dbg_dmp,
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, multispace0, multispace1},
     combinator::{complete, map, opt},
+    dbg_dmp,
     sequence::{preceded, terminated, tuple},
     IResult,
 };
@@ -136,6 +136,20 @@ pub enum ContractPart {
     EnumDefinition(EnumDefinition),
 }
 
+impl ContractPart {
+    pub fn op_codes(self) -> Vec<u32> {
+        let mut codes = vec![];
+        match self {
+            ContractPart::ConstructorDefinition(ctor) => {
+                codes.extend(ctor.op_codes());
+            }
+            _ => {}
+        }
+
+        codes
+    }
+}
+
 pub fn parse(i: &[u8]) -> IResult<&[u8], ContractPart> {
     alt((
         map(parse_constructor, |x| {
@@ -155,7 +169,7 @@ mod tests {
     use super::*;
 
     use crate::{
-        elementary_type_name::{UInt, ElementaryTypeName},
+        elementary_type_name::{ElementaryTypeName, UInt},
         expression::PrimaryExpression,
         visibility::Visibility,
     };

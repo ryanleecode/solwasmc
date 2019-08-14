@@ -8,6 +8,8 @@ mod directive;
 mod elementary_type_name;
 mod expression;
 mod literal;
+#[allow(dead_code)]
+mod op_codes;
 mod root;
 #[allow(dead_code)]
 mod state_mutability;
@@ -17,8 +19,6 @@ mod storage_location;
 mod token;
 #[allow(dead_code)]
 mod visibility;
-
-mod op_codes;
 
 #[wasm_bindgen]
 pub fn compile(assem_code: &str) -> String {
@@ -30,6 +30,7 @@ pub fn compile(assem_code: &str) -> String {
         panic!("compile failed");
     } else {
         let (_, root) = compile_result.ok().unwrap();
+        println!("{:#?}", root);
 
         let mut bytecode = String::new();
         for code in root.op_codes() {

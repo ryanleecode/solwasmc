@@ -1,5 +1,5 @@
 use crate::{
-    expression::{parse_parameter_list, Parameter, TypeName},
+    expression::{parse_parameter_list, FunctionCall, Parameter, TypeName},
     op_codes::OpCode,
     statement::{parse_block, Statement, VariableDeclaration, VariableDefinition},
     visibility::{parse as parse_visibility, Visibility},
@@ -42,6 +42,9 @@ impl Constructor {
         let mut codes = vec![];
         codes.extend(non_payable_guard);
         // TODO: CTOR PARAMS
+        for statement in self.statements {
+            codes.extend(statement.op_codes())
+        }
 
         codes
     }
@@ -103,13 +106,13 @@ mod tests {
                                 storage_location: None,
                                 identifier: "to".to_string(),
                             },],
-                            rhs: Expression::FunctionCall(
-                                Box::new(Expression::PrimaryExpression(
+                            rhs: Expression::FunctionCall(FunctionCall {
+                                expr: Box::new(Expression::PrimaryExpression(
                                     PrimaryExpression::ElementaryTypeNameExpression(
                                         ElementaryTypeName::Address
                                     )
                                 )),
-                                FunctionCallArguments::ExpressionList(Some(vec![
+                                args: FunctionCallArguments::ExpressionList(vec![
                                     Expression::PrimaryExpression(
                                         PrimaryExpression::NumberLiteral((
                                             Number::Hex(
@@ -119,8 +122,8 @@ mod tests {
                                             None
                                         ))
                                     )
-                                ]))
-                            )
+                                ])
+                            })
                         })],
                     }
                 )
