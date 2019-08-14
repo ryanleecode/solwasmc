@@ -109,9 +109,7 @@ impl FunctionCall {
                         Number::Decimal(val) => {
                           bytecode.push(OpCode::PUSH1 as u32);
                           let hex_str = format!("{:x}", val.parse::<i32>().unwrap());
-                          println!("{}", hex_str);
                           let bytes = FunctionCall::hex_to_bytes(hex_str.trim_start_matches("0x"));
-                          println!("{:#?}", bytes);
                           bytecode.extend(bytes);
                           /*    let bytes = FunctionCall::hex_to_bytes(val.trim_start_matches("0x"));
                           bytecode.push(OpCode::PUSH1 as u32);
