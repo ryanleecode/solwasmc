@@ -11,6 +11,7 @@ use nom::{
     IResult,
 };
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Root {
     pragma_directive: PragmaDirective,
     contracts: Vec<Contract>,

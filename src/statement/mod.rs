@@ -90,6 +90,25 @@ pub enum Statement {
     VariableDefinition(VariableDefinition),
 }
 
+impl Statement {
+    pub fn op_codes(self) -> Vec<u32> {
+        let mut codes = vec![];
+        match self {
+            Statement::Block(statements) => {
+                for statement in statements {
+                    codes.extend(statement.op_codes())
+                }
+            }
+            Statement::Expression(expr) => codes.extend(expr.op_codes()),
+            Statement::VariableDeclaration(decl) => {}
+            Statement::VariableDefinition(def) => {}
+            _ => {}
+        }
+
+        codes
+    }
+}
+
 pub fn parse_statement(i: &[u8]) -> IResult<&[u8], Statement> {
     alt((
         alt((

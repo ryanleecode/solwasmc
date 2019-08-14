@@ -15,6 +15,7 @@ wasm-bindgen = "0.2.48"
 logos = "0.9.7"
 nom = "5.0.0"
 console_error_panic_hook = "0.1.6"
+sha3 = "0.8.2"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

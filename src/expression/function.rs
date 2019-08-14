@@ -33,7 +33,7 @@ fn parse_name_value(i: &[u8]) -> IResult<&[u8], NameValue> {
 #[derive(Debug, PartialEq, Clone)]
 pub enum FunctionCallArguments {
     // NameValueList(Vec<NameValue>),
-    ExpressionList(Option<Vec<Expression>>),
+    ExpressionList(Vec<Expression>),
 }
 
 pub fn parses_function_call(i: &[u8]) -> IResult<&[u8], (Expression, FunctionCallArguments)> {
@@ -67,7 +67,7 @@ fn parse_function_call_arguments(i: &[u8]) -> IResult<&[u8], FunctionCallArgumen
        ))(i)
     */
     map(opt(parse_expression_list), |l| {
-        FunctionCallArguments::ExpressionList(l)
+        FunctionCallArguments::ExpressionList(l.unwrap_or(vec![]))
     })(i)
 }
 
