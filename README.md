@@ -25,11 +25,23 @@ const byteCode = compile("contract Test {...}");
 
 ## Building from Source
 
-`cargo build`
+### Prerequisites
 
-## Build for Web Assembly
+- [Python3](https://www.python.org/downloads/)
+- [GNU Make](https://www.gnu.org/software/make/)
+- [Cargo](https://github.com/rust-lang/cargo)
+- [Rust](https://www.rust-lang.org/)
 
+### Build
+
+```sh
+make generate
+cargo build
 ```
+
+### Build for Web Assembly
+
+```sh
 wasm-pack build --scope YOUR_NPM_USERNAME
 cd pkg
 npm publish --access=public
