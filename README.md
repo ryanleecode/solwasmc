@@ -2,6 +2,8 @@
 
 > Web assembly compiler for the solidity language.
 
+[![Build Status](https://travis-ci.com/drdgvhbh/solc-wasm.svg?branch=master)](https://travis-ci.com/drdgvhbh/solc-wasm)
+
 ## Table of contents
 
 - [General info](#general-info)
