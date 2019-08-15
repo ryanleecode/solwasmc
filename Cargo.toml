@@ -1,10 +1,11 @@
 [package]
-name = "solc-assem-wasm"
-version = "0.1.0"
+name = "solwasmc"
+version = "0.1.1"
 authors = ["Ryan Lee <drdgvhbh@gmail.com>"]
 edition = "2018"
 license = "MIT/Apache-2.0"
-repository = "https://github.com/drdgvhbh/solc-assem-wasm"
+description = "web assembly compiler for solidity"
+repository = "https://github.com/drdgvhbh/solwasmc"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
