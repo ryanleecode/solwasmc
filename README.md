@@ -1,122 +1,41 @@
-solc-assem-wasm
+# Solwasmc
 
-# Solidity Grammar
+> Web assembly compiler for the solidity language.
 
-- [ ] `SourceUnit = (PragmaDirective | ImportDirective | ContractDefinition)*`
+## Table of contents
 
-- [x] `PragmaDirective = 'pragma' Identifier ([^;]+) ';'`
+- [General info](#general-info)
+- [Usage](#usage)
+- [Building From Source](#building-from-source)
+- [Technologies](#technologies)
 
-- [ ] `ImportDirective = 'import' StringLiteral ('as' Identifier)? ';' | 'import' ('*' | Identifier) ('as' Identifier)? 'from' StringLiteral ';' | 'import' '{' Identifier ('as' Identifier)? ( ',' Identifier ('as' Identifier)? )* '}' 'from' StringLiteral ';'`
+## General info
 
-- [ ] `ContractDefinition = ( 'contract' | 'library' | 'interface' ) Identifier ( 'is' InheritanceSpecifier (',' InheritanceSpecifier )* )? '{' ContractPart* '}'`
+The motivation behind Solcwasmc is to build a solidity compiler that can run in the browser via [web assembly](https://webassembly.org/). This is not meant to replace the canonical [solc](https://github.com/ethereum/solidity.git) in terms of usability, but simply act as a drop in replacement for deploying smart contracts in the browser.
 
-- [ ] `ContractPart = StateVariableDeclaration | UsingForDeclaration | StructDefinition | ModifierDefinition | FunctionDefinition | EventDefinition | EnumDefinition`
+## Usage
 
-- [ ] `InheritanceSpecifier = UserDefinedTypeName ( '(' Expression ( ',' Expression )* ')' )?`
+`npm i @drdgvhbh/solwasmc`
 
-- [ ] `StateVariableDeclaration = TypeName ( 'public' | 'internal' | 'private' | 'constant' )* Identifier ('=' Expression)? ';'`
-- [ ] `UsingForDeclaration = 'using' Identifier 'for' ('*' | TypeName) ';'`
-- [ ] `StructDefinition = 'struct' Identifier '{' ( VariableDeclaration ';' (VariableDeclaration ';')* ) '}'`
+```ts
+import { compile } from "@drdgvhbh/solwasmc";
 
-- [ ] `ModifierDefinition = 'modifier' Identifier ParameterList? Block`
-- [ ] `ModifierInvocation = Identifier ( '(' ExpressionList? ')' )?`
+const byteCode = compile("contract Test {...}");
+```
 
-- [ ] `FunctionDefinition = 'function' Identifier? ParameterList ( ModifierInvocation | StateMutability | 'external' | 'public' | 'internal' | 'private' )* ( 'returns' ParameterList )? ( ';' | Block ) EventDefinition = 'event' Identifier EventParameterList 'anonymous'? ';'`
+## Building from Source
 
-- [ ] `EnumValue = Identifier`
-- [ ] `EnumDefinition = 'enum' Identifier '{' EnumValue? (',' EnumValue)* '}'`
+`cargo build`
 
-- [ ] `ParameterList = '(' ( Parameter (',' Parameter)* )? ')'`
-- [ ] `Parameter = TypeName StorageLocation? Identifier?`
+## Build for Web Assembly
 
-- [ ] `EventParameterList = '(' ( EventParameter (',' EventParameter )* )? ')'`
-- [ ] `EventParameter = TypeName 'indexed'? Identifier?`
+```
+wasm-pack build --scope YOUR_NPM_USERNAME
+cd pkg
+npm publish --access=public
+```
 
-- [ ] `FunctionTypeParameterList = '(' ( FunctionTypeParameter (',' FunctionTypeParameter )* )? ')'`
-- [ ] `FunctionTypeParameter = TypeName StorageLocation?`
+## Technologies
 
-- [ ] `VariableDeclaration = TypeName StorageLocation? Identifier`
-
-- [ ] `TypeName = ElementaryTypeName | UserDefinedTypeName | Mapping | ArrayTypeName | FunctionTypeName | ( 'address' 'payable' )`
-
-- [x] `UserDefinedTypeName = Identifier ( '.' Identifier )*`
-
-- [ ] `Mapping = 'mapping' '(' ElementaryTypeName '=>' TypeName ')'`
-- [ ] `ArrayTypeName = TypeName '[' Expression? ']'`
-- [ ] `FunctionTypeName = 'function' FunctionTypeParameterList ( 'internal' | 'external' | StateMutability )* ( 'returns' FunctionTypeParameterList )?`
-- [x] `StorageLocation = 'memory' | 'storage' | 'calldata'`
-- [ ] `StateMutability = 'pure' | 'view' | 'payable'`
-
-- [ ] `Block = '{' Statement* '}'`
-- [ ] `Statement = IfStatement | WhileStatement | ForStatement | Block | InlineAssemblyStatement | ( DoWhileStatement | PlaceholderStatement | Continue | Break | Return | Throw | EmitStatement | SimpleStatement ) ';'`
-
-- [ ] `ExpressionStatement = Expression`
-- [ ] `IfStatement = 'if' '(' Expression ')' Statement ( 'else' Statement )?`
-- [ ] `WhileStatement = 'while' '(' Expression ')' Statement`
-- [ ] `PlaceholderStatement = '_'`
-- [ ] `SimpleStatement = VariableDefinition | ExpressionStatement`
-- [ ] `ForStatement = 'for' '(' (SimpleStatement)? ';' (Expression)? ';' (ExpressionStatement)? ')' Statement`
-- [ ] `InlineAssemblyStatement = 'assembly' StringLiteral? AssemblyBlock`
-- [ ] `DoWhileStatement = 'do' Statement 'while' '(' Expression ')'`
-- [ ] `Continue = 'continue'`
-- [ ] `Break = 'break'`
-- [ ] `Return = 'return' Expression?`
-- [ ] `Throw = 'throw'`
-- [ ] `EmitStatement = 'emit' FunctionCall`
-- [ ] `VariableDefinition = (VariableDeclaration | '(' VariableDeclaration? (',' VariableDeclaration? )* ')' ) ( '=' Expression )?`
-
-- [ ] `Expression = Expression ('++' | '--') | NewExpression | IndexAccess | MemberAccess | FunctionCall | '(' Expression ')' | ('!' | '~' | 'delete' | '++' | '--' | '+' | '-') Expression | Expression '**' Expression | Expression ('*' | '/' | '%') Expression | Expression ('+' | '-') Expression | Expression ('<<' | '>>') Expression | Expression '&' Expression | Expression '^' Expression | Expression '|' Expression | Expression ('<' | '>' | '<=' | '>=') Expression | Expression ('==' | '!=') Expression | Expression '&&' Expression | Expression '||' Expression | Expression '?' Expression ':' Expression | Expression ('=' | '|=' | '^=' | '&=' | '<<=' | '>>=' | '+=' | '-=' | '*=' | '/=' | '%=') Expression | PrimaryExpression`
-
-- [ ] `PrimaryExpression = BooleanLiteral | NumberLiteral | HexLiteral | StringLiteral | TupleExpression | Identifier | ElementaryTypeNameExpression`
-
-- [ ] `ExpressionList = Expression ( ',' Expression )*`
-- [ ] `NameValueList = Identifier ':' Expression ( ',' Identifier ':' Expression )*`
-
-- [ ] `FunctionCall = Expression '(' FunctionCallArguments ')'`
-- [ ] `FunctionCallArguments = '{' NameValueList? '}' | ExpressionList?`
-
-- [ ] `NewExpression = 'new' TypeName`
-- [ ] `MemberAccess = Expression '.' Identifier`
-- [ ] `IndexAccess = Expression '[' Expression? ']'`
-
-- [ ] `BooleanLiteral = 'true' | 'false'`
-- [ ] `NumberLiteral = ( HexNumber | DecimalNumber ) (' ' NumberUnit)?`
-- [ ] `NumberUnit = 'wei' | 'szabo' | 'finney' | 'ether' | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'years'`
-- [ ] `HexLiteral = 'hex' ('"' ([0-9a-fA-F]{2})_ '"' | '\'' ([0-9a-fA-F]{2})_ '\'')`
-- [ ] `StringLiteral = '"' ([^"\r\n\\] | '\\' .)* '"'`
-- [ ] `Identifier = [a-zA-Z_$] [a-zA-Z_$0-9]*`
-
-- [ ] `HexNumber = '0x' [0-9a-fA-F]+`
-- [ ] `DecimalNumber = [0-9]+ ( '.' [0-9]* )? ( [eE] [0-9]+ )?`
-
-- [ ] `TupleExpression = '(' ( Expression? ( ',' Expression? )_ )? ')' | '[' ( Expression ( ',' Expression )_ )? ']'`
-
-- [ ] `ElementaryTypeNameExpression = ElementaryTypeName`
-
-- [x] `ElementaryTypeName = 'address' | 'bool' | 'string' | Int | Uint | Byte | Fixed | Ufixed`
-
-- [ ] `Int = 'int' | 'int8' | 'int16' | 'int24' | 'int32' | 'int40' | 'int48' | 'int56' | 'int64' | 'int72' | 'int80' | 'int88' | 'int96' | 'int104' | 'int112' | 'int120' | 'int128' | 'int136' | 'int144' | 'int152' | 'int160' | 'int168' | 'int176' | 'int184' | 'int192' | 'int200' | 'int208' | 'int216' | 'int224' | 'int232' | 'int240' | 'int248' | 'int256'`
-
-- [ ] `Uint = 'uint' | 'uint8' | 'uint16' | 'uint24' | 'uint32' | 'uint40' | 'uint48' | 'uint56' | 'uint64' | 'uint72' | 'uint80' | 'uint88' | 'uint96' | 'uint104' | 'uint112' | 'uint120' | 'uint128' | 'uint136' | 'uint144' | 'uint152' | 'uint160' | 'uint168' | 'uint176' | 'uint184' | 'uint192' | 'uint200' | 'uint208' | 'uint216' | 'uint224' | 'uint232' | 'uint240' | 'uint248' | 'uint256'`
-
-- [ ] `Byte = 'byte' | 'bytes' | 'bytes1' | 'bytes2' | 'bytes3' | 'bytes4' | 'bytes5' | 'bytes6' | 'bytes7' | 'bytes8' | 'bytes9' | 'bytes10' | 'bytes11' | 'bytes12' | 'bytes13' | 'bytes14' | 'bytes15' | 'bytes16' | 'bytes17' | 'bytes18' | 'bytes19' | 'bytes20' | 'bytes21' | 'bytes22' | 'bytes23' | 'bytes24' | 'bytes25' | 'bytes26' | 'bytes27' | 'bytes28' | 'bytes29' | 'bytes30' | 'bytes31' | 'bytes32'`
-
-- [ ] `Fixed = 'fixed' | ( 'fixed' [0-9]+ 'x' [0-9]+ )`
-
-- [ ] `Ufixed = 'ufixed' | ( 'ufixed' [0-9]+ 'x' [0-9]+ )`
-
-- [ ] `AssemblyBlock = '{' AssemblyStatement* '}'`
-
-- [ ] `AssemblyStatement = AssemblyBlock | AssemblyFunctionDefinition | AssemblyVariableDeclaration | AssemblyAssignment | AssemblyIf | AssemblyExpression | AssemblySwitch | AssemblyForLoop | AssemblyBreakContinue`
-- [ ] `AssemblyFunctionDefinition = 'function' Identifier '(' AssemblyIdentifierList? ')' ( '->' AssemblyIdentifierList )? AssemblyBlock`
-- [ ] `AssemblyVariableDeclaration = 'let' AssemblyIdentifierList ( ':=' AssemblyExpression )?`
-- [ ] `AssemblyAssignment = AssemblyIdentifierList ':=' AssemblyExpression`
-- [ ] `AssemblyExpression = AssemblyFunctionCall | Identifier | Literal`
-- [ ] `AssemblyIf = 'if' AssemblyExpression AssemblyBlock` - [ ] `AssemblySwitch = 'switch' AssemblyExpression ( Case+ AssemblyDefault? | AssemblyDefault )`
-- [ ] `AssemblyCase = 'case' Literal AssemblyBlock`
-- [ ] `AssemblyDefault = 'default' AssemblyBlock`
-- [ ] `AssemblyForLoop = 'for' AssemblyBlock AssemblyExpression AssemblyBlock AssemblyBlock`
-- [x] `AssemblyBreakContinue = 'break' | 'continue'`
-- [ ] `AssemblyFunctionCall = Identifier '(' ( AssemblyExpression ( ',' AssemblyExpression )\* )? ')'`
-
-- [ ] `AssemblyIdentifierList = Identifier ( ',' Identifier )*`
+- [Nom 5.0.0](https://docs.rs/nom/5.0.0/nom/)
+- [Rust](https://www.rust-lang.org/)
