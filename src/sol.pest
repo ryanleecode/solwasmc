@@ -1,4 +1,5 @@
-program = _{ SOI ~ pragma_statement ~ EOI }
+program = _{ SOI ~ pragma_directive ~ EOI }
+pragma_directive = { pragma ~ identifier ~ consume_until_semi ~ semi }
 
 pragma_statement = { pragma ~ identifier ~ consume_until_semi ~ semi }
 
