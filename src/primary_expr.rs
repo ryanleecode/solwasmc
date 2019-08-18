@@ -10,51 +10,63 @@ use pest::{consumes_to, parses_to};
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+    use super::*;
 
-  #[test]
-  fn string_literal_with_all_escape_types() {
-    parses_to! {
-        parser: SolParser,
-        input: r#""a\nb\x0Fc\u{a}d\u{AbAbAb}e""#,
-        rule: Rule::string_literal,
-        tokens: [
-            string_literal(0, 28, [
-                raw_string(1, 2),
-                escape(2, 4, [
-                    predefined(3, 4)
-                ]),
-                raw_string(4, 5),
-                escape(5, 9, [
-                    byte(6, 9)
-                ]),
-                raw_string(9, 10),
-                escape(10, 15, [
-                    unicode(11, 15, [
-                        unicode_hex(13, 14)
-                    ])
-                ]),
-                raw_string(15, 16),
-                escape(16, 26, [
-                    unicode(17, 26, [
-                        unicode_hex(19, 25)
-                    ])
-                ]),
-                raw_string(26, 27)
-            ])
-        ]
-    };
-  }
+    #[test]
+    fn string_literal_with_all_escape_types() {
+        parses_to! {
+            parser: SolParser,
+            input: r#""a\nb\x0Fc\u{a}d\u{AbAbAb}e""#,
+            rule: Rule::string_literal,
+            tokens: [
+                string_literal(0, 28, [
+                    raw_string(1, 2),
+                    escape(2, 4, [
+                        predefined(3, 4)
+                    ]),
+                    raw_string(4, 5),
+                    escape(5, 9, [
+                        byte(6, 9)
+                    ]),
+                    raw_string(9, 10),
+                    escape(10, 15, [
+                        unicode(11, 15, [
+                            unicode_hex(13, 14)
+                        ])
+                    ]),
+                    raw_string(15, 16),
+                    escape(16, 26, [
+                        unicode(17, 26, [
+                            unicode_hex(19, 25)
+                        ])
+                    ]),
+                    raw_string(26, 27)
+                ])
+            ]
+        };
+    }
 
-  #[test]
-  fn hex_number() {
-    parses_to! {
-        parser: SolParser,
-        input: "0xc0ffee254729296a45a3885639AC7E10F9d54979",
-        rule: Rule::hex_number,
-        tokens: [
-            hex_number(0, 42, [])
-        ]
-    };
-  }
+    #[test]
+    fn hex_number() {
+        parses_to! {
+            parser: SolParser,
+            input: "0xc0ffee254729296a45a3885639AC7E10F9d54979",
+            rule: Rule::hex_number,
+            tokens: [
+                hex_number(0, 42, [])
+            ]
+        };
+    }
+
+    #[test]
+    fn decimal_number() {
+        parses_to! {
+            parser: SolParser,
+            input: "123.456e10",
+            rule: Rule::decimal_number,
+            tokens: [
+                decimal_number(0, 10, [])
+            ]
+        };
+    }
 }

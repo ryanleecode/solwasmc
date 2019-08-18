@@ -22,7 +22,7 @@ state_variable_declaration = {
   type_name
   ~ ("public" | "internal" | "private" | "constant")*
   ~ identifier
-  ~ ("=" ~ expression)?
+/*   ~ ("=" ~ expression)? */
   ~ semi }
 
 function_type_parameter_list_block = _{ "(" ~ ")"}
@@ -46,20 +46,34 @@ function_type_name = {
 storage_location =  { "memory" | "storage" | "calldata" }
 state_mutability = { "pure" | "view" | "payable" }
 
-expression = { (new_expression ~ (("++" | "--")?))* }
+/* expression = { postfix_expression | new_expression  } */
+/* postfix_expression = { expression ~ ("++" | "--") } */
 new_expression = { new ~ type_name }
 
+/* primary_expression = { } */
+
+boolean_literal = { "true" | "false" }
+number_unit = { 
+  "wei" | "szabo" | "finney" | "ether" | 
+  "seconds" | "minutes" | "hours" | "days" | "weeks" | "years"
+}
+
+digit = _{ '0'..'9' }
 string_literal = { "\"" ~ (raw_string | escape)* ~ "\"" }
 raw_string = { (!("\\" | "\"") ~ ANY)+ }
-hex = _{ '0'..'9' | 'a'..'f' | 'A'..'F' }
+hex = _{ digit | 'a'..'f' | 'A'..'F' }
 unicode_hex = { hex{1, 6} }
 predefined = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
 byte       = { "x" ~ hex{2} }
 unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
 escape     = { "\\" ~ (predefined | byte | unicode) }
 
+identifier = @{ (ASCII_ALPHA | "_" | "$") ~ (ASCII_ALPHANUMERIC | "_" | "$")* }
+
 hex_number =  @{ hex_prefix ~ hex+ }
 hex_prefix = { "0x" }
+
+decimal_number = { digit+ ~ ( "." ~ digit+)? ~ (("e" | "E") ~ digit+)? }
 
 pragma = _{ "pragma" }
 semi = _ { ";" }
@@ -70,7 +84,6 @@ comma = _{ "," }
 returns = _{ "returns" }
 new = _{ "new" }
 
-identifier = @{ (ASCII_ALPHA | "_" | "$") ~ (ASCII_ALPHANUMERIC | "_" | "$")* }
 
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
 
