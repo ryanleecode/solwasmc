@@ -11,6 +11,7 @@ use pest::Parser;
 use std::ffi::CString;
 
 mod primary_expr;
+
 fn parse(source: &str) -> Result<Vec<u16>, Error<Rule>> {
   let mut ast = vec![];
   let parsed_text = SolParser::parse(Rule::program, source)?;

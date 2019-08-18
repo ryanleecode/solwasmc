@@ -45,4 +45,16 @@ mod tests {
         ]
     };
   }
+
+  #[test]
+  fn hex_number() {
+    parses_to! {
+        parser: SolParser,
+        input: "0xc0ffee254729296a45a3885639AC7E10F9d54979",
+        rule: Rule::hex_number,
+        tokens: [
+            hex_number(0, 42, [])
+        ]
+    };
+  }
 }

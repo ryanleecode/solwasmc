@@ -57,6 +57,10 @@ predefined = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
 byte       = { "x" ~ hex{2} }
 unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
 escape     = { "\\" ~ (predefined | byte | unicode) }
+
+hex_number =  @{ hex_prefix ~ hex+ }
+hex_prefix = { "0x" }
+
 pragma = _{ "pragma" }
 semi = _ { ";" }
 not_semi = { !semi ~ ANY }
