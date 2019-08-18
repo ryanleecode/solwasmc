@@ -50,7 +50,14 @@ state_mutability = { "pure" | "view" | "payable" }
 /* postfix_expression = { expression ~ ("++" | "--") } */
 new_expression = { new ~ type_name }
 
-/* primary_expression = { } */
+primary_expression = { 
+    boolean_literal |
+    number_literal |
+    hex_literal |
+    string_literal |
+    identifier |
+    elementary_type_name
+} 
 
 boolean_literal = { "true" | "false" }
 number_literal = { hex_number | decimal_number ~ (" " ~ number_unit)? } 
