@@ -47,7 +47,7 @@ mod tests {
     }
 
     #[test]
-    fn hex_number() {
+    fn parses_hex_number() {
         parses_to! {
             parser: SolParser,
             input: "0xc0ffee254729296a45a3885639AC7E10F9d54979",
@@ -59,7 +59,7 @@ mod tests {
     }
 
     #[test]
-    fn decimal_number() {
+    fn parses_decimal_number() {
         parses_to! {
             parser: SolParser,
             input: "123.456e10",
@@ -69,4 +69,17 @@ mod tests {
             ]
         };
     }
+
+    #[test]
+    fn parses_hex_literal() {
+        parses_to! {
+            parser: SolParser,
+            input: r#"hex"001122FF""#,
+            rule: Rule::hex_literal,
+            tokens: [
+                hex_literal(0, 13, [])
+            ]
+        };
+    }
+
 }

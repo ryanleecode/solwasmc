@@ -68,10 +68,10 @@ byte       = { "x" ~ hex{2} }
 unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
 escape     = { "\\" ~ (predefined | byte | unicode) }
 
+hex_literal = @{ "hex" ~ ("\""~ hex{2}* ~ "\"") | ( "\'" ~ hex{2}* ~ "\'") }
 identifier = @{ (ASCII_ALPHA | "_" | "$") ~ (ASCII_ALPHANUMERIC | "_" | "$")* }
 
 hex_number =  @{ "0x" ~ hex+ }
-
 decimal_number = { digit+ ~ ( "." ~ digit+)? ~ (("e" | "E") ~ digit+)? }
 
 pragma = _{ "pragma" }
