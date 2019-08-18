@@ -55,6 +55,7 @@ primary_expression = {
     number_literal |
     hex_literal |
     string_literal |
+    tuple_expression |
     identifier |
     elementary_type_name
 } 
