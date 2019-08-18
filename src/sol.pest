@@ -70,8 +70,7 @@ escape     = { "\\" ~ (predefined | byte | unicode) }
 
 identifier = @{ (ASCII_ALPHA | "_" | "$") ~ (ASCII_ALPHANUMERIC | "_" | "$")* }
 
-hex_number =  @{ hex_prefix ~ hex+ }
-hex_prefix = { "0x" }
+hex_number =  @{ "0x" ~ hex+ }
 
 decimal_number = { digit+ ~ ( "." ~ digit+)? ~ (("e" | "E") ~ digit+)? }
 
