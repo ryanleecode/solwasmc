@@ -53,6 +53,7 @@ new_expression = { new ~ type_name }
 /* primary_expression = { } */
 
 boolean_literal = { "true" | "false" }
+number_literal = { hex_number | decimal_number ~ (" " ~ number_unit)? } 
 number_unit = { 
   "wei" | "szabo" | "finney" | "ether" | 
   "seconds" | "minutes" | "hours" | "days" | "weeks" | "years"
