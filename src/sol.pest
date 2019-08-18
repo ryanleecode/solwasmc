@@ -49,6 +49,14 @@ state_mutability = { "pure" | "view" | "payable" }
 expression = { (new_expression ~ (("++" | "--")?))* }
 new_expression = { new ~ type_name }
 
+string_literal = { "\"" ~ (raw_string | escape)* ~ "\"" }
+raw_string = { (!("\\" | "\"") ~ ANY)+ }
+hex = _{ '0'..'9' | 'a'..'f' | 'A'..'F' }
+unicode_hex = { hex{1, 6} }
+predefined = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
+byte       = { "x" ~ hex{2} }
+unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
+escape     = { "\\" ~ (predefined | byte | unicode) }
 pragma = _{ "pragma" }
 semi = _ { ";" }
 not_semi = { !semi ~ ANY }
