@@ -22,7 +22,7 @@ state_variable_declaration = {
   type_name
   ~ ("public" | "internal" | "private" | "constant")*
   ~ identifier
-/*   ~ ("=" ~ expression)? */
+   ~ ("=" ~ expression)? 
   ~ semi }
 
 function_type_parameter_list_block = _{ "(" ~ ")"}
@@ -46,10 +46,26 @@ function_type_name = {
 storage_location =  { "memory" | "storage" | "calldata" }
 state_mutability = { "pure" | "view" | "payable" }
 
-/* expression = { postfix_expression | new_expression  } */
+expression = _{ new_expression | index_access | member_access | primary_expression }
 /* postfix_expression = { expression ~ ("++" | "--") } */
 new_expression = { new ~ type_name }
-
+index_access = { 
+    new_expression ~ "[" ~ expression? ~ "]" ~ index_access_prime? |
+    member_access ~ "[" ~  expression? ~ "]" ~ index_access_prime? |
+    primary_expression ~ "[" ~ expression? ~ "]" ~ index_access_prime?
+}
+index_access_prime = {
+    "[" ~ expression? ~ "]" ~ index_access_prime?
+}
+member_access = {
+    new_expression ~ "." ~ identifier ~ member_access_prime? |
+    primary_expression ~ "[" ~ expression? ~ "]" ~ index_access_prime? ~ "." ~ member_access_prime? |
+    primary_expression ~ "." ~ identifier ~ member_access_prime?
+}
+member_access_prime = {
+    "[" ~ expression? ~ "]" ~ index_access_prime? ~ "." ~ identifier ~ member_access_prime? |
+    "." ~ identifier ~ member_access_prime?
+}
 primary_expression = { 
     boolean_literal |
     number_literal |
