@@ -1,0 +1,92 @@
+use std::str::FromStr;
+use crate::lexer::{UInt, ElementaryTypeName, Byte};
+
+grammar;
+
+pub Term: i32 = {
+    <n:Num> => n,
+    "(" <t:Term> ")" => t,
+};
+
+pub ElementaryTypeNameTerm: ElementaryTypeName = {
+    "address" => ElementaryTypeName::Address,
+    "bool" => ElementaryTypeName::Bool,
+    "string" => ElementaryTypeName::String,
+    <n:UIntTerm> => ElementaryTypeName::UInt(n),
+    <n:ByteTerm> => ElementaryTypeName::Byte(n),
+}
+
+pub UIntTerm: UInt = {
+    "uint" => UInt::UInt,
+    "uint8" => UInt::UInt8,
+    "uint16" => UInt::UInt16,
+    "uint24" => UInt::UInt24,
+    "uint32" => UInt::UInt32,
+    "uint40" => UInt::UInt40,
+    "uint48" => UInt::UInt48,
+    "uint56" => UInt::UInt56,
+    "uint64" => UInt::UInt64,
+    "uint72" => UInt::UInt72,
+    "uint80" => UInt::UInt80,
+    "uint88" => UInt::UInt88,
+    "uint96" => UInt::UInt96,
+    "uint104" => UInt::UInt104,
+    "uint112" => UInt::UInt112,
+    "uint120" => UInt::UInt120,
+    "uint128" => UInt::UInt128,
+    "uint136" => UInt::UInt136,
+    "uint144" => UInt::UInt144,
+    "uint152" => UInt::UInt152,
+    "uint160" => UInt::UInt160,
+    "uint168" => UInt::UInt168,
+    "uint176" => UInt::UInt176,
+    "uint184" => UInt::UInt184,
+    "uint192" => UInt::UInt192,
+    "uint200" => UInt::UInt200,
+    "uint208" => UInt::UInt208,
+    "uint216" => UInt::UInt216,
+    "uint224" => UInt::UInt224,
+    "uint232" => UInt::UInt232,
+    "uint240" => UInt::UInt240,
+    "uint248" => UInt::UInt248,
+    "uint256" => UInt::UInt256,
+}
+
+pub ByteTerm: Byte = {
+    "byte" => Byte::Byte,
+    "bytes" => Byte::Bytes,
+    "bytes1" => Byte::Bytes1,
+    "bytes2" => Byte::Bytes2,
+    "bytes3" => Byte::Bytes3,
+    "bytes4" => Byte::Bytes4,
+    "bytes5" => Byte::Bytes5,
+    "bytes6" => Byte::Bytes6,
+    "bytes7" => Byte::Bytes7,
+    "bytes8" => Byte::Bytes8,
+    "bytes9" => Byte::Bytes9,
+    "bytes10" => Byte::Bytes10,
+    "bytes11" => Byte::Bytes11,
+    "bytes12" => Byte::Bytes12,
+    "bytes13" => Byte::Bytes13,
+    "bytes14" => Byte::Bytes14,
+    "bytes15" => Byte::Bytes15,
+    "bytes16" => Byte::Bytes16,
+    "bytes17" => Byte::Bytes17,
+    "bytes18" => Byte::Bytes18,
+    "bytes19" => Byte::Bytes19,
+    "bytes20" => Byte::Bytes20,
+    "bytes21" => Byte::Bytes21,
+    "bytes22" => Byte::Bytes22,
+    "bytes23" => Byte::Bytes23,
+    "bytes24" => Byte::Bytes24,
+    "bytes25" => Byte::Bytes25,
+    "bytes26" => Byte::Bytes26,
+    "bytes27" => Byte::Bytes27,
+    "bytes28" => Byte::Bytes28,
+    "bytes29" => Byte::Bytes29,
+    "bytes30" => Byte::Bytes30,
+    "bytes31" => Byte::Bytes31,
+    "bytes32" => Byte::Bytes32,
+}
+
+Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
