@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use crate::lexer::{UInt, ElementaryTypeName, Byte};
+use crate::ast::{PrimaryExpression, Expression};
 
 grammar;
 
@@ -7,6 +8,19 @@ pub Term: i32 = {
     <n:Num> => n,
     "(" <t:Term> ")" => t,
 };
+
+Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+
+pub Expression: Expression = {
+    <e:PrimaryExpression> => Expression::PrimaryExpression(e)
+}
+
+pub PrimaryExpression: PrimaryExpression = {
+    <e:Identifier> => PrimaryExpression::Identifier(e),
+    <e:ElementaryTypeNameTerm> => PrimaryExpression::ElementaryTypeNameExpression(e),
+}
+
+pub Identifier: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();
 
 pub ElementaryTypeNameTerm: ElementaryTypeName = {
     "address" => ElementaryTypeName::Address,
@@ -89,4 +103,3 @@ pub ByteTerm: Byte = {
     "bytes32" => Byte::Bytes32,
 }
 
-Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();

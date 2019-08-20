@@ -4,6 +4,12 @@ mod byte;
 mod uint;
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum BooleanLiteral {
+    True,
+    False
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum ElementaryTypeName {
     Address,
     Bool,
