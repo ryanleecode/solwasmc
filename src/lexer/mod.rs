@@ -1,12 +1,13 @@
-pub use self::{byte::Byte, uint::UInt};
+pub use self::{byte::Byte, operator::Operator, uint::UInt};
 
 mod byte;
+mod operator;
 mod uint;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum BooleanLiteral {
     True,
-    False
+    False,
 }
 
 #[derive(Debug, PartialEq, Clone)]

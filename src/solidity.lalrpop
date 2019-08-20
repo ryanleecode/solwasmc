@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use crate::lexer::{UInt, ElementaryTypeName, Byte};
+use crate::lexer::{UInt, ElementaryTypeName, Byte, Operator};
 use crate::ast::{PrimaryExpression, Expression};
 
 grammar;
@@ -10,6 +10,8 @@ pub Term: i32 = {
 };
 
 Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+
+
 
 pub Expression: Expression = {
     <e:PrimaryExpression> => Expression::PrimaryExpression(e)
@@ -103,3 +105,44 @@ pub ByteTerm: Byte = {
     "bytes32" => Byte::Bytes32,
 }
 
+pub OperatorTerm: Operator {
+    "++" => Operator::Increment,
+    "--" => Operator::Decrement,
+    "!" => Operator::Not,
+    "~" => Operator::Unary,
+    "delete" => Operator::Delete,
+    "+" => Operator::Plus,
+    "-" => Operator::Minus,
+    "**" => Operator::Exp,
+    "*" => Operator::Multiply,
+    "/" => Operator::Divide,
+    "%" => Operator::Mod,
+    "<<" => Operator::LeftShift,
+    ">>" => Operator::RightShift,
+    "&" => Operator::BitwiseAnd,
+    "^" => Operator::XOR,
+    "|" => Operator::BitwiseOR,
+    "<" => Operator::LT,
+    ">" => Operator::GT,
+    "<=" => Operator::GTEq,
+    ">=" => Operator::LTEq,
+    "==" => Operator::Eq,
+    "!=" => Operator::NotEq,
+    "&&" => Operator::And,
+    "||" => Operator::Or,
+    "?" => Operator::QuestionMark,
+    ":" => Operator::Colon,
+    "=" => Operator::AssignEq,
+    "|=" => Operator::AssignOr,
+    "^=" => Operator::AssignXOR,
+    "&=" => Operator::AssignAnd,
+    "<<=" => Operator::AssignLeftShift,
+    ">>=" => Operator::AssignRightShift,
+    "+=" => Operator::AssignAdd,
+    "-=" => Operator::AssignSubtract,
+    "*=" => Operator::AssignMultiply,
+    "/=" => Operator::AssignDivide,
+    "%=" => Operator::AssignMod,
+    "(" => Operator::LeftParen,
+    ")" => Operator::RightParen,
+}
