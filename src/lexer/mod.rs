@@ -5,6 +5,12 @@ mod operator;
 mod uint;
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum Number {
+    Hex(String),
+    Decimal(String),
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum BooleanLiteral {
     True,
     False,

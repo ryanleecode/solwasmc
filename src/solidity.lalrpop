@@ -1,15 +1,8 @@
 use std::str::FromStr;
-use crate::lexer::{UInt, ElementaryTypeName, Byte, Operator};
+use crate::lexer::{UInt, ElementaryTypeName, Byte, Operator, Number};
 use crate::ast::{PrimaryExpression, Expression, TypeName};
 
 grammar;
-
-pub Term: i32 = {
-    <n:Num> => n,
-    "(" <t:Term> ")" => t,
-};
-
-Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
 
 pub TypeName: TypeName = {
     ElementaryTypeNameTerm => TypeName::Elementary(<>),
@@ -46,14 +39,22 @@ pub PrimaryExpression: PrimaryExpression = {
     ElementaryTypeNameTerm => PrimaryExpression::ElementaryTypeName(<>),
 }
 
-pub Identifier: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();
-
 pub ElementaryTypeNameTerm: ElementaryTypeName = {
     "address" => ElementaryTypeName::Address,
     "bool" => ElementaryTypeName::Bool,
     "string" => ElementaryTypeName::String,
     <n:UIntTerm> => ElementaryTypeName::UInt(n),
     <n:ByteTerm> => ElementaryTypeName::Byte(n),
+}
+
+pub StringLiteral: String = <s:r#""[^"]*""#> => s[1..s.len()-1].to_string();
+
+pub Identifier: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();
+
+
+pub DecimalNumber: Number = {
+    <a:r"0x[0-9a-fA-F]+"> => Number::Hex(a.to_string()),
+    <a:r"[0-9]+(\.[0-9]*)?([eE][0-9]+)?"> => Number::Decimal(a.to_string())
 }
 
 pub UIntTerm: UInt = {
