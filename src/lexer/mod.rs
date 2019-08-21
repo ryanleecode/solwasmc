@@ -1,6 +1,7 @@
-pub use self::{byte::Byte, operator::Operator, uint::UInt};
+pub use self::{byte::Byte, number_unit::NumberUnit, operator::Operator, uint::UInt};
 
 mod byte;
+mod number_unit;
 mod operator;
 mod uint;
 
