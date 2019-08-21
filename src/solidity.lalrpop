@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use crate::lexer::{UInt, ElementaryTypeName, Byte, Operator, Number, NumberUnit};
+use crate::lexer::{UInt, ElementaryTypeName, Byte, Operator, Number, NumberUnit, BooleanLiteral};
 use crate::ast::{PrimaryExpression, Expression, TypeName};
 
 grammar;
@@ -31,7 +31,6 @@ pub UserDefinedTypeName: Vec<String> = {
 pub Expression: Box<Expression> = {
     Expression PostfixTerm => Box::new(Expression::Postfix(<>)),
     PrimaryExpression => Box::new(Expression::Primary(<>))
-
 }
 
 pub NumberUnit: NumberUnit = {
@@ -50,6 +49,11 @@ pub NumberUnit: NumberUnit = {
 pub PrimaryExpression: PrimaryExpression = {
     Identifier => PrimaryExpression::Identifier(<>),
     ElementaryTypeNameTerm => PrimaryExpression::ElementaryTypeName(<>),
+}
+
+pub BooleanLiteral: BooleanLiteral = {
+    "true" => BooleanLiteral::True,
+    "false" => BooleanLiteral::False,
 }
 
 pub HexLiteral: String = <s:r#"hex("([0-9a-fA-F]{2})*"|'([0-9a-fA-F]{2}*)')"#> =>

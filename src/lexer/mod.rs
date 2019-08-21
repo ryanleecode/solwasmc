@@ -56,4 +56,18 @@ mod tests {
         let literal = parse_result.ok().unwrap();
         assert_eq!(literal, "asdf\\\"fdsa".to_string())
     }
+
+    fn parses_boolean_literal_true() {
+        let parse_result = solidity::BooleanLiteralParser::new().parse("true");
+        assert!(parse_result.is_ok());
+        let literal = parse_result.ok().unwrap();
+        assert_eq!(literal, BooleanLiteral::True)
+    }
+
+    fn parses_boolean_literal_false() {
+        let parse_result = solidity::BooleanLiteralParser::new().parse("false");
+        assert!(parse_result.is_ok());
+        let literal = parse_result.ok().unwrap();
+        assert_eq!(literal, BooleanLiteral::False)
+    }
 }
