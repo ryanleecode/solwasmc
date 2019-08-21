@@ -1,6 +1,15 @@
 use crate::lexer::{BooleanLiteral, ElementaryTypeName, Operator};
 
+pub type UserDefinedTypeName = Vec<String>;
+
 pub type ElementaryTypeNameExpression = ElementaryTypeName;
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum TypeName {
+    ElementaryTypeName(ElementaryTypeName),
+    UserDefinedTypeName(UserDefinedTypeName),
+    Mapping(ElementaryTypeName, Box<TypeName>),
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
@@ -23,7 +32,7 @@ mod tests {
 
     use crate::{
         ast::{Expression, PrimaryExpression},
-        lexer::Operator,
+        lexer::{Operator, UInt},
         solidity,
     };
 
@@ -57,5 +66,29 @@ mod tests {
                 Operator::Decrement,
             ))
         )
+    }
+
+    #[test]
+    fn parses_user_defined_type_name() {
+        let parse_result = solidity::UserDefinedTypeNameParser::new().parse("asdf.qwer");
+        assert!(parse_result.is_ok());
+        let expr = parse_result.ok().unwrap();
+        assert_eq!(expr, (vec!["asdf".to_string(), "qwer".to_string()]));
+    }
+
+    #[test]
+    fn parses_mapping() {
+        let parse_result = solidity::TypeNameParser::new().parse("mapping(address => uint)");
+        assert!(parse_result.is_ok());
+        let expr = parse_result.ok().unwrap();
+        assert_eq!(
+            expr,
+            TypeName::Mapping(
+                ElementaryTypeName::Address,
+                Box::new(TypeName::ElementaryTypeName(ElementaryTypeName::UInt(
+                    UInt::UInt,
+                )))
+            )
+        );
     }
 }

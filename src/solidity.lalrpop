@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use crate::lexer::{UInt, ElementaryTypeName, Byte, Operator};
-use crate::ast::{PrimaryExpression, Expression};
+use crate::ast::{PrimaryExpression, Expression, TypeName};
 
 grammar;
 
@@ -11,7 +11,24 @@ pub Term: i32 = {
 
 Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
 
+Mapping: TypeName = {
+    "mapping" "(" <a:ElementaryTypeNameTerm> "=>" <b:TypeName> ")" =>
+        TypeName::Mapping(a, Box::new(b))
+}
 
+pub TypeName: TypeName = {
+    ElementaryTypeNameTerm => TypeName::ElementaryTypeName(<>),
+    UserDefinedTypeName => TypeName::UserDefinedTypeName(<>),
+    Mapping
+}
+
+pub UserDefinedTypeName: Vec<String> = {
+    <a:Identifier> <b:("." Identifier)*> => {
+        let mut v = vec![a];
+        v.extend(b.iter().map(|x| x.1.clone()));
+        v
+    }
+}
 
 pub Expression: Box<Expression> = {
     Expression PostfixTerm => Box::new(Expression::PostfixExpression(<>)),
