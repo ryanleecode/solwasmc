@@ -11,15 +11,20 @@ pub Term: i32 = {
 
 Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
 
+pub TypeName: TypeName = {
+    ElementaryTypeNameTerm => TypeName::Elementary(<>),
+    UserDefinedTypeName => TypeName::UserDefined(<>),
+    Mapping,
+    ArrayTypeName
+}
+
 Mapping: TypeName = {
     "mapping" "(" <a:ElementaryTypeNameTerm> "=>" <b:TypeName> ")" =>
         TypeName::Mapping(a, Box::new(b))
 }
 
-pub TypeName: TypeName = {
-    ElementaryTypeNameTerm => TypeName::ElementaryTypeName(<>),
-    UserDefinedTypeName => TypeName::UserDefinedTypeName(<>),
-    Mapping
+ArrayTypeName: TypeName = {
+    <a:TypeName> "[" <b:Expression?> "]" => TypeName::Array(Box::new(a), b)
 }
 
 pub UserDefinedTypeName: Vec<String> = {
@@ -31,14 +36,14 @@ pub UserDefinedTypeName: Vec<String> = {
 }
 
 pub Expression: Box<Expression> = {
-    Expression PostfixTerm => Box::new(Expression::PostfixExpression(<>)),
-    PrimaryExpression => Box::new(Expression::PrimaryExpression(<>))
+    Expression PostfixTerm => Box::new(Expression::Postfix(<>)),
+    PrimaryExpression => Box::new(Expression::Primary(<>))
 
 }
 
 pub PrimaryExpression: PrimaryExpression = {
     Identifier => PrimaryExpression::Identifier(<>),
-    ElementaryTypeNameTerm => PrimaryExpression::ElementaryTypeNameExpression(<>),
+    ElementaryTypeNameTerm => PrimaryExpression::ElementaryTypeName(<>),
 }
 
 pub Identifier: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();

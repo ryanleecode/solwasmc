@@ -6,22 +6,23 @@ pub type ElementaryTypeNameExpression = ElementaryTypeName;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TypeName {
-    ElementaryTypeName(ElementaryTypeName),
-    UserDefinedTypeName(UserDefinedTypeName),
+    Elementary(ElementaryTypeName),
+    UserDefined(UserDefinedTypeName),
     Mapping(ElementaryTypeName, Box<TypeName>),
+    Array(Box<TypeName>, Option<Box<Expression>>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
-    PostfixExpression(Box<Expression>, Operator),
-    PrimaryExpression(PrimaryExpression),
+    Postfix(Box<Expression>, Operator),
+    Primary(PrimaryExpression),
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PrimaryExpression {
     BooleanLiteral(BooleanLiteral),
     Identifier(String),
-    ElementaryTypeNameExpression(ElementaryTypeNameExpression),
+    ElementaryTypeName(ElementaryTypeNameExpression),
 }
 
 #[cfg(test)]
@@ -43,8 +44,8 @@ mod tests {
         let expr = parse_result.ok().unwrap();
         assert_eq!(
             expr,
-            Box::new(Expression::PostfixExpression(
-                Box::new(Expression::PrimaryExpression(
+            Box::new(Expression::Postfix(
+                Box::new(Expression::Primary(
                     PrimaryExpression::Identifier("a".to_string())
                 )),
                 Operator::Increment,
@@ -59,8 +60,8 @@ mod tests {
         let expr = parse_result.ok().unwrap();
         assert_eq!(
             expr,
-            Box::new(Expression::PostfixExpression(
-                Box::new(Expression::PrimaryExpression(
+            Box::new(Expression::Postfix(
+                Box::new(Expression::Primary(
                     PrimaryExpression::Identifier("a".to_string())
                 )),
                 Operator::Decrement,
@@ -85,9 +86,23 @@ mod tests {
             expr,
             TypeName::Mapping(
                 ElementaryTypeName::Address,
-                Box::new(TypeName::ElementaryTypeName(ElementaryTypeName::UInt(
+                Box::new(TypeName::Elementary(ElementaryTypeName::UInt(
                     UInt::UInt,
                 )))
+            )
+        );
+    }
+
+    #[test]
+    fn parses_array_typename() {
+        let parse_result = solidity::TypeNameParser::new().parse("a[]");
+        assert!(parse_result.is_ok());
+        let expr = parse_result.ok().unwrap();
+        assert_eq!(
+            expr,
+            TypeName::Array(
+                Box::new(TypeName::UserDefined(vec!["a".to_string()])),
+                None,
             )
         );
     }
