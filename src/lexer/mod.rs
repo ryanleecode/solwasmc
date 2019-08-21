@@ -47,4 +47,12 @@ mod tests {
         let literal = parse_result.ok().unwrap();
         assert_eq!(literal, "AdEc36".to_string())
     }
+
+    #[test]
+    fn parses_string_literal() {
+        let parse_result = solidity::StringLiteralParser::new().parse(r#""asdf\"fdsa""#);
+        assert!(parse_result.is_ok());
+        let literal = parse_result.ok().unwrap();
+        assert_eq!(literal, "asdf\\\"fdsa".to_string())
+    }
 }

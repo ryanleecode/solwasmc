@@ -50,7 +50,7 @@ pub ElementaryTypeNameTerm: ElementaryTypeName = {
 pub HexLiteral: String = <s:r#"hex("([0-9a-fA-F]{2})*"|'([0-9a-fA-F]{2}*)')"#> =>
     s[4..s.len()-1].to_string();
 
-pub StringLiteral: String = <s:r#""[^"]*""#> => s[1..s.len()-1].to_string();
+pub StringLiteral: String = <s:r#""([^"\r\n\\]|\\.)*""#> => s[1..s.len()-1].to_string();
 
 pub Identifier: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();
 
