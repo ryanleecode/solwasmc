@@ -13,8 +13,10 @@ Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
 
 
 
-pub Expression: Expression = {
-    <e:PrimaryExpression> => Expression::PrimaryExpression(e)
+pub Expression: Box<Expression> = {
+    Expression PostfixTerm => Box::new(Expression::PostfixExpression(<>)),
+    PrimaryExpression => Box::new(Expression::PrimaryExpression(<>))
+
 }
 
 pub PrimaryExpression: PrimaryExpression = {
@@ -105,7 +107,12 @@ pub ByteTerm: Byte = {
     "bytes32" => Byte::Bytes32,
 }
 
-pub OperatorTerm: Operator {
+pub PostfixTerm: Operator = {
+    "++" => Operator::Increment,
+    "--" => Operator::Decrement,
+}
+
+pub OperatorTerm: Operator = {
     "++" => Operator::Increment,
     "--" => Operator::Decrement,
     "!" => Operator::Not,
