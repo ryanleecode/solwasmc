@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use crate::lexer::{UInt, ElementaryTypeName, Byte, Operator, Number, NumberUnit, BooleanLiteral};
-use crate::ast::{PrimaryExpression, Expression, TypeName};
+use crate::ast::{PrimaryExpression, Expression, TypeName, FunctionCallArguments};
 
 grammar;
 
@@ -28,9 +28,100 @@ pub UserDefinedTypeName: Vec<String> = {
     }
 }
 
-pub Expression: Box<Expression> = {
+ExpressionTier1: Box<Expression> = {
     Expression PostfixTerm => Box::new(Expression::Postfix(<>)),
+    ExpressionTier2,
+}
+
+ExpressionTier2: Box<Expression> = {
+    MemberAccess => Box::new(Expression::MemberAccess(<>.0, <>.1)),
+    ExpressionTier3,
+}
+
+ExpressionTier3: Box<Expression> = {
+    IndexAccess => Box::new(Expression::IndexAccess(<>.0, <>.1)),
+    ExpressionTier4,
+}
+
+ExpressionTier4: Box<Expression> = {
+    <a:Expression> "(" <b:FunctionCallArguments> ")" =>
+        Box::new(Expression::FunctionCall(a, b)),
+    ExpressionTier5,
+}
+
+ExpressionTier5: Box<Expression> = {
+    <a:PrefixTerm> <b:ExpressionTier1> => Box::new(
+        Expression::Prefix(a, Box::new(Expression::Primary(b)))),
+    ExpressionTier6
+}
+
+ExpressionTier6: Box<Expression> = {
     PrimaryExpression => Box::new(Expression::Primary(<>))
+}
+
+pub Expression: Box<Expression> = {
+    ExpressionTier1,
+    // Expression PostfixTerm => Box::new(Expression::Postfix(<>)),
+   // NewExpression => Box::new(Expression::New(<>)),
+    /// MemberAccess => Box::new(Expression::MemberAccess(<>.0, <>.1)),
+    /// IndexAccess => Box::new(Expression::IndexAccess(<>.0, <>.1)),
+    /// <a:Expression> "(" <b:FunctionCallArguments> ")" => Box::new(Expression::FunctionCall(a, b)),
+   // "(" <a:Expression> ")" => Box::new(a),
+    /// <a:PrefixTerm> <b:PrimaryExpression> => Box::new(
+    ///     Expression::Prefix(a, Box::new(Expression::Primary(b)))),
+    /// PrimaryExpression => Box::new(Expression::Primary(<>))
+}
+
+pub PrimaryExpression: PrimaryExpression = {
+    BooleanLiteral => PrimaryExpression::BooleanLiteral(<>),
+    NumberLiteral => PrimaryExpression::NumberLiteral(<>.0, <>.1),
+    HexLiteral => PrimaryExpression::HexLiteral(<>),
+    StringLiteral => PrimaryExpression::StringLiteral(<>),
+    TupleExpression => PrimaryExpression::TupleExpression(<>),
+    Identifier => PrimaryExpression::Identifier(<>),
+    ElementaryTypeNameTerm => PrimaryExpression::ElementaryTypeName(<>),
+}
+
+ExpressionList: Vec<Box<Expression>> = {
+    <a:Expression> <b:("," Expression)*> => {
+        let mut v = vec![a];
+        v.extend(b.iter().map(|x| x.1.clone()));
+        v
+    }
+}
+
+NameValueList: Vec<(String, Box<Expression>)> = {
+    <a:Identifier> ":" <b:Expression> <c:("," Identifier ":" Expression)*> => {
+        let mut v = vec![(a, b)];
+        v.extend(c.iter().map(|x| (x.1.to_string(), x.3.clone())));
+        v
+    }
+}
+
+FunctionCallArguments: FunctionCallArguments = {
+    "{" <a:NameValueList?> "}" => FunctionCallArguments::NameValueList(a),
+    ExpressionList? => FunctionCallArguments::ExpressionList(<>)
+}
+
+pub NewExpression: TypeName = {
+    "new" <a:TypeName> => a
+}
+
+pub MemberAccess: (Box<Expression>, String) = {
+    <a:Expression> "." <b:Identifier> => (a, b)
+}
+
+pub IndexAccess: (Box<Expression>, Option<Box<Expression>>) = {
+    <a:Expression> "[" <b:Expression?> "]" => (a, b)
+}
+
+pub BooleanLiteral: BooleanLiteral = {
+    "true" => BooleanLiteral::True,
+    "false" => BooleanLiteral::False,
+}
+
+pub NumberLiteral: (Number, Option<NumberUnit>) = {
+    <a:Number> <b:(" " NumberUnit?)> => (a, b.1)
 }
 
 pub NumberUnit: NumberUnit = {
@@ -46,16 +137,6 @@ pub NumberUnit: NumberUnit = {
     "years" => NumberUnit::Years,
 }
 
-pub PrimaryExpression: PrimaryExpression = {
-    Identifier => PrimaryExpression::Identifier(<>),
-    ElementaryTypeNameTerm => PrimaryExpression::ElementaryTypeName(<>),
-}
-
-pub BooleanLiteral: BooleanLiteral = {
-    "true" => BooleanLiteral::True,
-    "false" => BooleanLiteral::False,
-}
-
 pub HexLiteral: String = <s:r#"hex("([0-9a-fA-F]{2})*"|'([0-9a-fA-F]{2}*)')"#> =>
     s[4..s.len()-1].to_string();
 
@@ -63,10 +144,23 @@ pub StringLiteral: String = <s:r#""([^"\r\n\\]|\\.)*""#> => s[1..s.len()-1].to_s
 
 pub Identifier: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();
 
-pub DecimalNumber: Number = {
+pub Number: Number = {
     <a:r"0x[0-9a-fA-F]+"> => Number::Hex(a.to_string()),
     <a:r"[0-9]+(\.[0-9]*)?([eE][0-9]+)?"> => Number::Decimal(a.to_string())
 }
+
+pub TupleExpression: Vec<Expression> = {
+    "(" <a:Expression?> <b:("," Expression?)*> ")" => {
+        let mut exprs = Vec::<Expression>::new();
+        if a != None {
+            exprs.push(*a.unwrap());
+        }
+        exprs.extend(b.iter()
+            .filter(|x| x.1 != None)
+            .map(|x| *x.1.as_ref().unwrap().clone()));
+        exprs
+    }
+};
 
 pub ElementaryTypeNameTerm: ElementaryTypeName = {
     "address" => ElementaryTypeName::Address,
@@ -152,6 +246,16 @@ pub ByteTerm: Byte = {
 pub PostfixTerm: Operator = {
     "++" => Operator::Increment,
     "--" => Operator::Decrement,
+}
+
+pub PrefixTerm: Operator = {
+     "!" => Operator::Not,
+    "~" => Operator::Unary,
+    "delete" => Operator::Delete,
+    "++" => Operator::Increment,
+    "--" => Operator::Decrement,
+    "+" => Operator::Plus,
+    "-" => Operator::Minus,
 }
 
 pub OperatorTerm: Operator = {

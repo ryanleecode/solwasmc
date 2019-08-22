@@ -1,8 +1,14 @@
-use crate::lexer::{BooleanLiteral, ElementaryTypeName, Operator};
+use crate::lexer::{BooleanLiteral, ElementaryTypeName, Number, NumberUnit, Operator};
 
 pub type UserDefinedTypeName = Vec<String>;
 
 pub type ElementaryTypeNameExpression = ElementaryTypeName;
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum FunctionCallArguments {
+    NameValueList(Option<Vec<(String, Box<Expression>)>>),
+    ExpressionList(Option<Vec<Box<Expression>>>),
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TypeName {
@@ -15,12 +21,22 @@ pub enum TypeName {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
     Postfix(Box<Expression>, Operator),
+    New(TypeName),
+    MemberAccess(Box<Expression>, String),
+    IndexAccess(Box<Expression>, Option<Box<Expression>>),
+    FunctionCall(Box<Expression>, FunctionCallArguments),
+    Prefix(Operator, Box<Expression>),
+    MidOp(Box<Expression>, Operator, Box<Expression>),
     Primary(PrimaryExpression),
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PrimaryExpression {
     BooleanLiteral(BooleanLiteral),
+    NumberLiteral(Number, Option<NumberUnit>),
+    HexLiteral(String),
+    StringLiteral(String),
+    TupleExpression(Vec<Expression>),
     Identifier(String),
     ElementaryTypeName(ElementaryTypeNameExpression),
 }
@@ -45,9 +61,9 @@ mod tests {
         assert_eq!(
             expr,
             Box::new(Expression::Postfix(
-                Box::new(Expression::Primary(
-                    PrimaryExpression::Identifier("a".to_string())
-                )),
+                Box::new(Expression::Primary(PrimaryExpression::Identifier(
+                    "a".to_string()
+                ))),
                 Operator::Increment,
             ))
         )
@@ -61,9 +77,9 @@ mod tests {
         assert_eq!(
             expr,
             Box::new(Expression::Postfix(
-                Box::new(Expression::Primary(
-                    PrimaryExpression::Identifier("a".to_string())
-                )),
+                Box::new(Expression::Primary(PrimaryExpression::Identifier(
+                    "a".to_string()
+                ))),
                 Operator::Decrement,
             ))
         )
@@ -86,9 +102,7 @@ mod tests {
             expr,
             TypeName::Mapping(
                 ElementaryTypeName::Address,
-                Box::new(TypeName::Elementary(ElementaryTypeName::UInt(
-                    UInt::UInt,
-                )))
+                Box::new(TypeName::Elementary(ElementaryTypeName::UInt(UInt::UInt,)))
             )
         );
     }
@@ -100,10 +114,7 @@ mod tests {
         let expr = parse_result.ok().unwrap();
         assert_eq!(
             expr,
-            TypeName::Array(
-                Box::new(TypeName::UserDefined(vec!["a".to_string()])),
-                None,
-            )
+            TypeName::Array(Box::new(TypeName::UserDefined(vec!["a".to_string()])), None,)
         );
     }
 }
